@@ -3,6 +3,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const compression = require("compression");
+const fileUpload = require("express-fileupload");
 const getIp = require("./assets/getIp");
 const rateLimiter = require("./assets/rateLimiter");
 const helmet = require("helmet");
@@ -19,9 +20,15 @@ app.use(
         origin: "*",
     })
 );
+app.use(compression());
+app.use(
+    fileUpload({
+        useTempFiles: true,
+        tempFileDir: "/temp/",
+    })
+);
 app.use(getIp);
 app.use(rateLimiter);
-app.use(compression());
 app.use(helmet());
 
 app.use("/api", apiHandler);
