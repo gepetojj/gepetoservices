@@ -6,7 +6,7 @@
     "author": "Gepetojj",
     "license": "MIT",
     "scripts": {
-        "start": "npm .",
+        "start": "node .",
         "dev": "nodemon ."
     },
     "dependencies": {
