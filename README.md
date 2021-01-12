@@ -23,4 +23,4 @@ Mais informações sobre cada lib, clique [aqui](https://github.com/gepetojj/gep
 
 #### Documentação
 
-Para mais informações de como funciona a API, acesse a [Wiki](https://github.com/gepetojj/gepetoservices/blob/master/package.json).
+Para mais informações de como funciona a API, acesse a [Wiki](https://github.com/gepetojj/gepetoservices/wiki).
