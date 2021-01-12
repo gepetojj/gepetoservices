@@ -4,7 +4,7 @@
 
 #### Conceito
 
-A ideia o GepetoServices é juntar em uma só API, sistemas que serão usado por várias aplicações.
+A ideia do GepetoServices é juntar em uma só API, sistemas que serão usado por várias aplicações.
 
 
 #### Tecnologias
