@@ -24,7 +24,6 @@
         "moment": "^2.29.1",
         "moment-timezone": "^0.5.32",
         "rate-limiter-flexible": "^2.2.1",
-        "redis": "^3.0.2",
         "shortid": "^2.2.16",
         "validator": "^13.5.2"
     },
