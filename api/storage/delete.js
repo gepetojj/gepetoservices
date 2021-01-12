@@ -88,7 +88,7 @@ async function deleteFile(req, filename) {
     }
 }
 
-router.get("/", async (req, res) => {
+router.delete("/", async (req, res) => {
     const { filename } = req.query;
 
     if (filename === undefined) {
