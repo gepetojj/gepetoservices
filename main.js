@@ -25,6 +25,7 @@ app.use(
     fileUpload({
         useTempFiles: true,
         tempFileDir: "/temp/",
+        createParentPath: true,
     })
 );
 app.use(getIp);
