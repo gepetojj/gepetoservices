@@ -108,6 +108,8 @@ router.post("/", async (req, res) => {
             .json(response(true, "O arquivo não pode ser nulo."));
     }
 
+    console.log(__dirname);
+
     const file = req.files.file;
     const mimeTypes = ["text", "image", "audio", "video"];
 
