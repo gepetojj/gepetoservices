@@ -32,6 +32,9 @@ app.use(rateLimiter);
 app.use(helmet());
 
 app.use("/api", apiHandler);
+app.get("/", (req, res) => {
+    res.status(300).redirect("https://github.com/gepetojj/gepetoservices/wiki");
+});
 
 app.listen(port, () => {
     console.log("Servidor online.");
