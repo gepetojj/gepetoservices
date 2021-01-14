@@ -23,8 +23,6 @@ app.use(
 app.use(compression());
 app.use(
     fileUpload({
-        useTempFiles: true,
-        tempFileDir: "/temp/",
         createParentPath: true,
     })
 );
