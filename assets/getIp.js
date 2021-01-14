@@ -1,7 +1,9 @@
-const ip = require("ip");
+const RequestIp = require("@supercharge/request-ip");
 
 const getIp = (req, res, next) => {
-    req.ip = ip.address();
+    const userIp = RequestIp.getClientIp(req);
+    req.ip = userIp;
+    console.log(`Novo acesso a API pelo ip: ${userIp}`);
     next();
 };
 
