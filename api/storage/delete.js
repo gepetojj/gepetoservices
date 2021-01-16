@@ -6,6 +6,8 @@ const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
 const retryHandler = require("../../assets/retryHandler");
 
+const Performance = require("../../assets/tests/performance");
+
 const bucket = firebase.storage().bucket();
 const database = firebase.firestore().collection("storageLog");
 
@@ -89,13 +91,16 @@ async function deleteFile(req, filename) {
 }
 
 router.delete("/", async (req, res) => {
+    const performanceLog = new Performance("/storage/delete");
     const { filename } = req.query;
 
     if (filename === undefined) {
+        performanceLog.finish();
         return res
             .status(400)
             .json(response(true, "O nome do arquivo não pode ser nulo."));
     } else if (validator.isEmpty(filename)) {
+        performanceLog.finish();
         return res
             .status(400)
             .json(response(true, "O nome do arquivo não pode ser nulo."));
@@ -108,17 +113,20 @@ router.delete("/", async (req, res) => {
     const isUserOwnerTries = isUserOwner.length - 1;
 
     if (isUserOwner[isUserOwnerTries].error) {
+        performanceLog.finish();
         return res
             .status(500)
             .json(response(true, isUserOwner[isUserOwnerTries].data));
     } else {
         if (isUserOwner[isUserOwnerTries].data.error) {
+            performanceLog.finish();
             return res
                 .status(400)
                 .json(
                     response(true, isUserOwner[isUserOwnerTries].data.message)
                 );
         } else {
+            performanceLog.watchpoint("isUserOwner");
             const deleteFileAction = await retryHandler(
                 deleteFile.bind(this, req, filename),
                 2
@@ -126,6 +134,7 @@ router.delete("/", async (req, res) => {
             const deleteFileActionTries = deleteFileAction.length - 1;
 
             if (deleteFileAction[deleteFileActionTries].error) {
+                performanceLog.finish();
                 return res
                     .status(500)
                     .json(
@@ -135,6 +144,7 @@ router.delete("/", async (req, res) => {
                         )
                     );
             } else {
+                performanceLog.finish();
                 return res.json(
                     response(
                         deleteFileAction[deleteFileActionTries].data.error,

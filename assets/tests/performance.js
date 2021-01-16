@@ -25,11 +25,12 @@ class Performance {
         });
         this.end = moment().valueOf();
         this.executionTime = this.end - this.start;
-        return console.log(
+        console.log(
             `O endpoint '${this.endpoint}' respondeu em ${moment(
                 this.end - this.start
             ).format("x [ms.]")}`
         );
+        return console.log("---");
     }
 }
 

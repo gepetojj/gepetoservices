@@ -8,7 +8,7 @@ const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
 const retryHandler = require("../../assets/retryHandler");
 
-const Performance = require("../../assets/tests/performance"); // REMOVE
+const Performance = require("../../assets/tests/performance");
 
 const bucket = firebase.storage().bucket();
 const database = firebase.firestore().collection("storageLog");
