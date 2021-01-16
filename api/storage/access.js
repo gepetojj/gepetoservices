@@ -17,7 +17,7 @@ async function makeFilePublic(file) {
         };
     } catch (err) {
         throw new Error(
-            "Não foi possível deixar seu arquivo público. Tente novamente."
+            "Não foi possível deixar seu arquivo público ou seu arquivo não existe. Tente novamente."
         );
     }
 }

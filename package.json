@@ -7,7 +7,8 @@
     "license": "MIT",
     "scripts": {
         "start": "node .",
-        "dev": "nodemon ."
+        "dev": "nodemon .",
+        "test": "mocha ./assets/tests/api.js"
     },
     "dependencies": {
         "@k3rn31p4nic/google-translate-api": "^1.1.1",
@@ -28,6 +29,9 @@
         "validator": "^13.5.2"
     },
     "devDependencies": {
+        "chai": "^4.2.0",
+        "chai-http": "^4.3.0",
+        "mocha": "^8.2.1",
         "nodemon": "^2.0.7"
     }
 }

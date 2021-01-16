@@ -8,6 +8,8 @@ const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
 const retryHandler = require("../../assets/retryHandler");
 
+const Performance = require("../../assets/tests/performance"); // REMOVE
+
 const bucket = firebase.storage().bucket();
 const database = firebase.firestore().collection("storageLog");
 moment().locale("pt-br");
@@ -102,7 +104,9 @@ async function deleteFile(bucket, filename) {
 }
 
 router.post("/", async (req, res) => {
+    const performanceLog = new Performance("/storage/upload");
     if (!req.files) {
+        performanceLog.finish();
         return res
             .status(400)
             .json(response(true, "O arquivo não pode ser nulo."));
@@ -112,10 +116,12 @@ router.post("/", async (req, res) => {
     const mimeTypes = ["text", "image", "audio", "video"];
 
     if (file.size > 5242880) {
+        performanceLog.finish();
         return res
             .status(400)
             .json(response(true, "Seu arquivo não pode ter mais que 5 MB."));
     } else if (!mimeTypes.includes(file.mimetype.split("/")[0])) {
+        performanceLog.finish();
         return res
             .status(400)
             .json(
@@ -129,14 +135,17 @@ router.post("/", async (req, res) => {
     const userLimits = await retryHandler(verifyUserLimits.bind(this, req), 2);
     const tries = userLimits.length - 1;
     if (userLimits[tries].error === true) {
+        performanceLog.finish();
         return res.status(500).json(response(true, userLimits[tries].data));
     } else {
         if (userLimits[tries].data.error === true) {
+            performanceLog.finish();
             return res
                 .status(400)
                 .json(response(true, userLimits[tries].data.message));
         }
     }
+    performanceLog.watchpoint("userLimits");
 
     const filename = moment().format(
         `DD-MM-YYYY_hh-mm-ssa_[${shortid.generate()}.${
@@ -146,6 +155,7 @@ router.post("/", async (req, res) => {
     file.mv(`${process.cwd()}/temp/${filename}`, (err) => {
         if (err) {
             console.error(err);
+            performanceLog.finish();
             return res
                 .status(500)
                 .json(
@@ -155,6 +165,7 @@ router.post("/", async (req, res) => {
                     )
                 );
         }
+        performanceLog.watchpoint("fileMove");
 
         bucket
             .upload(`${process.cwd()}/temp/${filename}`, {
@@ -162,6 +173,7 @@ router.post("/", async (req, res) => {
                 validation: file.md5,
             })
             .then(async () => {
+                performanceLog.watchpoint("fileUpload");
                 fs.unlinkSync(`${process.cwd()}/temp/${filename}`, (err) => {
                     if (err) {
                         console.error(err);
@@ -182,6 +194,7 @@ router.post("/", async (req, res) => {
                     const dfaErrorTries = deleteFileAfterError.length - 1;
 
                     if (deleteFileAfterError[dfaErrorTries].error === true) {
+                        performanceLog.finish();
                         return res
                             .status(500)
                             .json(
@@ -191,6 +204,7 @@ router.post("/", async (req, res) => {
                                 )
                             );
                     } else {
+                        performanceLog.finish();
                         return res
                             .status(500)
                             .json(
@@ -203,6 +217,7 @@ router.post("/", async (req, res) => {
                     }
                 }
 
+                performanceLog.finish();
                 return res.json(
                     response(false, "Seu arquivo foi armazenado com sucesso.", {
                         filename,
@@ -211,6 +226,7 @@ router.post("/", async (req, res) => {
             })
             .catch((err) => {
                 console.error(err);
+                performanceLog.finish();
                 return res
                     .status(500)
                     .json(

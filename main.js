@@ -38,3 +38,5 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
     console.log("Servidor online.");
 });
+
+module.exports = app;
