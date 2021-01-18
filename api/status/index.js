@@ -66,7 +66,7 @@ router.get("/", async (req, res) => {
         );
         testResults.translator.timeToRespond = translatorTimeToRespond;
         testResults.translator.classifiedAs = classifier(
-            translatorTest.status,
+            testResults.translator.statusCode,
             translatorTimeToRespond
         );
         performanceLog.watchpoint("translatorTest");
@@ -100,7 +100,7 @@ router.get("/", async (req, res) => {
         );
         testResults.upload.timeToRespond = uploadTimeToRespond;
         testResults.upload.classifiedAs = classifier(
-            uploadTest.status,
+            testResults.upload.statusCode,
             uploadTimeToRespond
         );
         performanceLog.watchpoint("uploadTest");
@@ -120,7 +120,7 @@ router.get("/", async (req, res) => {
         );
         testResults.access.timeToRespond = accessTimeToRespond;
         testResults.access.classifiedAs = classifier(
-            accessTest.status,
+            testResults.access.statusCode,
             accessTimeToRespond
         );
         performanceLog.watchpoint("accessTest");
@@ -140,7 +140,7 @@ router.get("/", async (req, res) => {
         );
         testResults.delete.timeToRespond = deleteTimeToRespond;
         testResults.delete.classifiedAs = classifier(
-            deleteTest.status,
+            testResults.delete.statusCode,
             deleteTimeToRespond
         );
         performanceLog.watchpoint("deleteTest");
