@@ -70,3 +70,22 @@ describe("API: Status", () => {
             });
     });
 });
+
+describe("API: Users", () => {
+    it("Deve criar um usuário", (done) => {
+        chai.request(server)
+            .post(`/api/users/create`)
+            .send({
+                username: "Teste",
+                email: "teste@teste.com",
+                password: "Teste!123123",
+                passwordConfirm: "Teste!123123",
+            })
+            .end((err, res) => {
+                if (err) console.log(err);
+                res.should.have.status(200);
+
+                done();
+            });
+    });
+});

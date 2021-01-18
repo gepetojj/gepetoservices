@@ -9,6 +9,7 @@ const rateLimiter = require("./assets/rateLimiter");
 const helmet = require("helmet");
 
 const apiHandler = require("./api/handler");
+const response = require("./assets/response");
 
 const app = express();
 const port = process.env.PORT;
@@ -31,8 +32,22 @@ app.use(rateLimiter);
 app.use(helmet());
 
 app.use("/api", apiHandler);
+
 app.get("/", (req, res) => {
-    res.status(300).redirect("https://github.com/gepetojj/gepetoservices/wiki");
+    return res
+        .status(300)
+        .redirect("https://github.com/gepetojj/gepetoservices/wiki");
+});
+app.use((req, res) => {
+    return res
+        .status(404)
+        .json(
+            response(
+                true,
+                "Esse endpoint não existe. Verifique o método ou a escrita e tente novamente.",
+                { method: req.method, endpoint: req.path }
+            )
+        );
 });
 
 app.listen(port, () => {
