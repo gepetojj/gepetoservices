@@ -16,7 +16,7 @@ const rateLimiter = (req, res, next) => {
             next();
         })
         .catch(() => {
-            res.status(429).json(
+            return res.status(429).json(
                 response(
                     true,
                     "Você atingiu o limite de requests ao servidor.",
