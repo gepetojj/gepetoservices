@@ -21,6 +21,9 @@ Mais informações sobre cada lib, clique [aqui](https://github.com/gepetojj/gep
 * Storage
   * Armazenamento de arquivos. Limitado a 7 arquivos de até 5MB por usuário.
 
+* Status
+  * Verifique como está o andamento de todas as API's.
+
 #### Documentação
 
 Para mais informações de como funciona a API, acesse a [Wiki](https://github.com/gepetojj/gepetoservices/wiki).
