@@ -57,3 +57,16 @@ describe("API: Translator", () => {
             });
     });
 });
+
+describe("API: Status", () => {
+    it("Deve testar todas as API's", (done) => {
+        chai.request(server)
+            .get(`/api/status`)
+            .end((err, res) => {
+                if (err) console.log(err);
+                res.should.have.status(200);
+
+                done();
+            });
+    });
+});

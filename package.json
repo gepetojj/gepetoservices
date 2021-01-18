@@ -13,6 +13,7 @@
     "dependencies": {
         "@k3rn31p4nic/google-translate-api": "^1.1.1",
         "@supercharge/request-ip": "^1.1.2",
+        "axios": "^0.21.1",
         "body-parser": "^1.19.0",
         "compression": "^1.7.4",
         "cors": "^2.8.5",
@@ -20,6 +21,7 @@
         "express": "^4.17.1",
         "express-fileupload": "^1.2.0",
         "firebase-admin": "^9.4.2",
+        "form-data": "^3.0.0",
         "fs": "^0.0.1-security",
         "helmet": "^4.3.1",
         "moment": "^2.29.1",
