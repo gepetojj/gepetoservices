@@ -24,6 +24,9 @@ Mais informações sobre cada lib, clique [aqui](https://github.com/gepetojj/gep
 * Status
   * Verifique como está o andamento de todas as API's.
 
+* Users
+  * Crie seu usuário do GepetoServices.
+
 #### Documentação
 
 Para mais informações de como funciona a API, acesse a [Wiki](https://github.com/gepetojj/gepetoservices/wiki).
