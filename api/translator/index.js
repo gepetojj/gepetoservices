@@ -4,6 +4,7 @@ const translate = require("@k3rn31p4nic/google-translate-api");
 const validator = require("validator");
 
 const response = require("../../assets/response");
+const textPack = require("../../assets/textPack.json");
 
 router.get("/", (req, res) => {
     const { text, from, to } = req.query;
@@ -11,7 +12,7 @@ router.get("/", (req, res) => {
     if (text === undefined || from === undefined || to === undefined) {
         return res
             .status(400)
-            .json(response(true, "Nenhum campo pode ser nulo."));
+            .json(response(true, textPack.standards.nullFields));
     } else if (
         validator.isEmpty(text) ||
         validator.isEmpty(from) ||
@@ -19,7 +20,7 @@ router.get("/", (req, res) => {
     ) {
         return res
             .status(400)
-            .json(response(true, "Nenhum campo pode ser nulo."));
+            .json(response(true, textPack.standards.nullFields));
     }
 
     translate(text, { from: from || "auto", to })
@@ -38,12 +39,7 @@ router.get("/", (req, res) => {
                     console.error(err);
                     return res
                         .status(500)
-                        .json(
-                            response(
-                                true,
-                                "Não foi possível traduzir o seu texto. Contate o administrador."
-                            )
-                        );
+                        .json(response(true, textPack.standards.responseError));
                 });
         });
 });

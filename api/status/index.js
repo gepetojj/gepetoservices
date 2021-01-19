@@ -10,6 +10,7 @@ moment().tz("America/Maceio");
 
 const API = require("../../assets/api");
 const response = require("../../assets/response");
+const textPack = require("../../assets/textPack.json");
 
 const Performance = require("../../assets/tests/performance");
 
@@ -147,7 +148,7 @@ router.get("/", async (req, res) => {
 
         performanceLog.finish();
         return res.json(
-            response(false, "Status obtido com sucesso.", {
+            response(false, textPack.status.responseOK, {
                 storage: {
                     access: testResults.access,
                     delete: testResults.delete,
@@ -160,7 +161,7 @@ router.get("/", async (req, res) => {
         console.error(err);
         return res
             .status(500)
-            .json(response(true, "Não foi possível obter o status."));
+            .json(response(true, textPack.standards.responseError));
     }
 });
 

@@ -1,0 +1,27 @@
+{
+    "main": {
+        "redirectURL": "https://github.com/gepetojj/gepetoservices/wiki",
+        "notFound": "Esse endpoint não existe. Verifique o método ou a escrita e tente novamente.",
+        "serverStart": "Servidor online."
+    },
+    "standards": {
+        "responseOK": "A operação foi concluída com sucesso.",
+        "responseError": "Não foi possível concluir esta operação. Tente novamente.",
+        "nullField": "O campo necessário não pode ser nulo.",
+        "nullFields": "Nenhum campo pode ser nulo."
+    },
+    "users": {
+        "create": {
+            "userCreated": "Seu usuário foi criado com sucesso.",
+            "userNotCreated": "Não foi possível criar seu usuário. Tente novamente.",
+            "avatarURL": "https://firebasestorage.googleapis.com/v0/b/gepetoservices.appspot.com/o/user_image.png?alt=media&token=be333301-d240-47cf-9105-831881fe10ba"
+        },
+        "verify": {
+            "responseOK": "Autenticado com sucesso.",
+            "responseError": "Seu token não é válido."
+        }
+    },
+    "status": {
+        "responseOK": "Status obtido com sucesso."
+    }
+}

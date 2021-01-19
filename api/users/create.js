@@ -4,8 +4,12 @@ const router = express.Router();
 const response = require("../../assets/response");
 const validator = require("../../assets/validator");
 const firebase = require("../../assets/firebase");
+const textPack = require("../../assets/textPack.json");
+
+const Performance = require("../../assets/tests/performance");
 
 router.post("/", (req, res) => {
+    const performanceLog = new Performance("/users/create");
     const { username, email, password, passwordConfirm } = req.body;
 
     if (
@@ -14,14 +18,10 @@ router.post("/", (req, res) => {
         password === undefined ||
         passwordConfirm === undefined
     ) {
+        performanceLog.finish();
         return res
             .status(400)
-            .json(
-                response(
-                    true,
-                    "Algum dos campos necessários não foi preenchido."
-                )
-            );
+            .json(response(true, textPack.standards.nullFields));
     }
 
     const dataValidation = validator([
@@ -33,8 +33,9 @@ router.post("/", (req, res) => {
     ]);
 
     if (dataValidation.length > 0) {
+        performanceLog.finish();
         return res.status(400).json(
-            response(true, "Houve um erro ao tentar validar seu request.", {
+            response(true, textPack.standards.responseError, {
                 errors: dataValidation,
             })
         );
@@ -46,40 +47,33 @@ router.post("/", (req, res) => {
             email,
             password,
             displayName: username,
-            photoURL:
-                "https://firebasestorage.googleapis.com/v0/b/gepetoservices.appspot.com/o/user_image.png?alt=media&token=be333301-d240-47cf-9105-831881fe10ba",
+            photoURL: textPack.users.create.avatarURL,
         })
         .then((user) => {
+            performanceLog.watchpoint("userCreation");
             firebase
                 .auth()
                 .setCustomUserClaims(user.uid, { admin: false })
                 .then(() => {
+                    performanceLog.finish();
                     return res.json(
-                        response(false, "Seu usuário foi criado com sucesso.")
+                        response(false, textPack.users.create.userCreated)
                     );
                 })
                 .catch((err) => {
                     console.error(err);
+                    performanceLog.finish();
                     return res
                         .status(500)
-                        .json(
-                            response(
-                                true,
-                                "Não foi possível concluir seu pedido. Tente novamente."
-                            )
-                        );
+                        .json(response(true, textPack.standards.responseError));
                 });
         })
         .catch((err) => {
             console.error(err);
+            performanceLog.finish();
             return res
                 .status(500)
-                .json(
-                    response(
-                        true,
-                        "Não foi possível criar seu usuário. Tente novamente."
-                    )
-                );
+                .json(response(true, textPack.users.create.userNotCreated));
         });
 });
 
