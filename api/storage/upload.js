@@ -7,6 +7,7 @@ const fs = require("fs");
 const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
 const retryHandler = require("../../assets/retryHandler");
+const textPack = require("../../assets/textPack.json");
 
 const Performance = require("../../assets/tests/performance");
 
@@ -24,25 +25,22 @@ async function verifyUserLimits(req) {
             if (maxUploads) {
                 return {
                     error: true,
-                    message:
-                        "Você atingiu seu limite de 7 arquivos armazenados.",
+                    message: textPack.storage.upload.limitReached,
                 };
             } else {
                 return {
                     error: false,
-                    message: "Limite ainda não alcançado.",
+                    message: "",
                 };
             }
         } else {
             return {
                 error: false,
-                message: "O limite ainda não existe.",
+                message: "",
             };
         }
     } catch (err) {
-        throw new Error(
-            "Não foi possível verificar seus limites. Contate o administrador."
-        );
+        throw new Error(textPack.storage.upload.limitError);
     }
 }
 
@@ -59,11 +57,11 @@ async function logUserAction(req, filename) {
                     },
                 });
             } catch (err) {
-                throw new Error("Não foi possível registrar seu upload.");
+                throw new Error(textPack.standards.responseError);
             }
             return {
                 error: false,
-                message: "Ação registrada.",
+                message: "",
             };
         } else {
             const data = log.data();
@@ -75,15 +73,15 @@ async function logUserAction(req, filename) {
                     },
                 });
             } catch (err) {
-                throw new Error("Não foi possível registrar seu upload.");
+                throw new Error(textPack.standards.responseError);
             }
             return {
                 error: false,
-                message: "Ação registrada.",
+                message: "",
             };
         }
     } catch (err) {
-        throw new Error("Não foi possível registrar sua ação.");
+        throw new Error(textPack.standards.nullField);
     }
 }
 
@@ -93,13 +91,10 @@ async function deleteFile(bucket, filename) {
         await file.delete();
         return {
             error: true,
-            message:
-                "Não foi possível registrar seu upload, mas sua ação foi cancelada. Tente novamente.",
+            message: textPack.storage.upload.uploadCanceled,
         };
     } catch (err) {
-        throw new Error(
-            "Não foi possível cancelar seu upload por causa do erro anterior. Contate o administrador."
-        );
+        throw new Error(textPack.storage.upload.uploadCanceledError);
     }
 }
 
@@ -109,7 +104,7 @@ router.post("/", async (req, res) => {
         performanceLog.finish();
         return res
             .status(400)
-            .json(response(true, "O arquivo não pode ser nulo."));
+            .json(response(true, textPack.standards.nullField));
     }
 
     const file = req.files.file;
@@ -119,17 +114,12 @@ router.post("/", async (req, res) => {
         performanceLog.finish();
         return res
             .status(400)
-            .json(response(true, "Seu arquivo não pode ter mais que 5 MB."));
+            .json(response(true, textPack.storage.upload.fileLimit));
     } else if (!mimeTypes.includes(file.mimetype.split("/")[0])) {
         performanceLog.finish();
         return res
             .status(400)
-            .json(
-                response(
-                    true,
-                    "Seu arquivo só pode ser: texto, imagem, audio ou vídeo."
-                )
-            );
+            .json(response(true, textPack.storage.upload.fileType));
     }
 
     const userLimits = await retryHandler(verifyUserLimits.bind(this, req), 2);
@@ -158,12 +148,7 @@ router.post("/", async (req, res) => {
             performanceLog.finish();
             return res
                 .status(500)
-                .json(
-                    response(
-                        true,
-                        "Não foi possível realizar procedimentos em seu arquivo. Contate o administrador."
-                    )
-                );
+                .json(response(true, textPack.standards.responseError));
         }
         performanceLog.watchpoint("fileMove");
 
@@ -219,7 +204,7 @@ router.post("/", async (req, res) => {
 
                 performanceLog.finish();
                 return res.json(
-                    response(false, "Seu arquivo foi armazenado com sucesso.", {
+                    response(false, textPack.standards.responseOK, {
                         filename,
                     })
                 );
@@ -229,12 +214,7 @@ router.post("/", async (req, res) => {
                 performanceLog.finish();
                 return res
                     .status(500)
-                    .json(
-                        response(
-                            true,
-                            "Não foi possível armazenar seu arquivo. Tente novamente."
-                        )
-                    );
+                    .json(response(true, textPack.standards.responseError));
             });
     });
 });

@@ -5,6 +5,7 @@ const validator = require("validator");
 const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
 const retryHandler = require("../../assets/retryHandler");
+const textPack = require("../../assets/textPack.json");
 
 const Performance = require("../../assets/tests/performance");
 
@@ -18,9 +19,7 @@ async function makeFilePublic(file) {
             message: "",
         };
     } catch (err) {
-        throw new Error(
-            "Não foi possível deixar seu arquivo público ou seu arquivo não existe. Tente novamente."
-        );
+        throw new Error(textPack.storage.access.makePublicError);
     }
 }
 
@@ -32,12 +31,12 @@ router.get("/", async (req, res) => {
         performanceLog.finish();
         return res
             .status(400)
-            .json(response(true, "O nome do arquivo não pode ser nulo."));
+            .json(response(true, textPack.standards.nullField));
     } else if (validator.isEmpty(filename)) {
         performanceLog.finish();
         return res
             .status(400)
-            .json(response(true, "O nome do arquivo não pode ser nulo."));
+            .json(response(true, textPack.standards.nullField));
     }
 
     const file = bucket.file(filename);
@@ -57,7 +56,7 @@ router.get("/", async (req, res) => {
 
     performanceLog.finish();
     return res.json(
-        response(false, "Arquivo resgatado com sucesso.", {
+        response(false, textPack.standards.responseOK, {
             file: file.publicUrl(),
         })
     );

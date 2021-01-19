@@ -4,6 +4,28 @@
         "notFound": "Esse endpoint não existe. Verifique o método ou a escrita e tente novamente.",
         "serverStart": "Servidor online."
     },
+    "rateLimiter": {
+        "responseError": "Você atingiu o limite de requests ao servidor."
+    },
+    "validator": {
+        "username": {
+            "null": "O usuário não pode ser nulo.",
+            "length": "O usuário deve ter no máximo 13 caracteres.",
+            "alphanumeric": "O usuário só pode ter letras e números."
+        },
+        "email": {
+            "null": "O email não pode ser nulo.",
+            "valid": "Este email não é válido."
+        },
+        "password": {
+            "null": "A senha não pode ser nula.",
+            "length": "A senha deve ter no mínimo 10 caracteres.",
+            "strong": "A senha deve ter pelo menos uma letra minúscula, maiúscula, número e símbolo."
+        },
+        "equals": {
+            "equal": "As senhas devem ser iguais."
+        }
+    },
     "standards": {
         "responseOK": "A operação foi concluída com sucesso.",
         "responseError": "Não foi possível concluir esta operação. Tente novamente.",
@@ -23,5 +45,23 @@
     },
     "status": {
         "responseOK": "Status obtido com sucesso."
+    },
+    "storage": {
+        "access": {
+            "makePublicError": "Não foi possível deixar seu arquivo público ou seu arquivo não existe. Tente novamente."
+        },
+        "delete": {
+            "notOwnerOrDoesntExists": "Você não é dono deste arquivo ou ele não existe.",
+            "notOwner": "Você não é dono deste arquivo.",
+            "lackOfPermission": "Você não tem permissão para isto."
+        },
+        "upload": {
+            "limitReached": "Você alcançou seu limite de 7 arquivos armazenados. Delete algum caso queira liberar espaço.",
+            "limitError": "Não foi possível verificar sua cota. Tente novamente.",
+            "uploadCanceled": "Seu upload foi cancelado devido a um erro. Tente novamente.",
+            "uploadCanceledError": "Houve um erro e não foi possível cancelar seu upload. Contate um administrador.",
+            "fileLimit": "Seu arquivo não pode ter mais que 5 MB.",
+            "fileType": "O tipo do arquivo só pode ser: vídeo, imagem, áudio ou texto."
+        }
     }
 }

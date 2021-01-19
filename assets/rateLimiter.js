@@ -1,5 +1,6 @@
 const { RateLimiterMemory } = require("rate-limiter-flexible");
 const response = require("./response");
+const textPack = require("./textPack.json");
 
 const points = 50;
 const duration = 1800; // 30 minutos
@@ -17,15 +18,11 @@ const rateLimiter = (req, res, next) => {
         })
         .catch(() => {
             return res.status(429).json(
-                response(
-                    true,
-                    "Você atingiu o limite de requests ao servidor.",
-                    {
-                        limit: `${points} requests em ${Math.floor(
-                            duration / 60
-                        )} minutos`,
-                    }
-                )
+                response(true, textPack.rateLimiter.responseError, {
+                    limit: `${points} requests em ${Math.floor(
+                        duration / 60
+                    )} minutos.`,
+                })
             );
         });
 };

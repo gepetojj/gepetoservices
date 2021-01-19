@@ -10,6 +10,7 @@ const helmet = require("helmet");
 
 const apiHandler = require("./api/handler");
 const response = require("./assets/response");
+const textPack = require("./assets/textPack.json");
 
 const app = express();
 const port = process.env.PORT;
@@ -34,24 +35,19 @@ app.use(helmet());
 app.use("/api", apiHandler);
 
 app.get("/", (req, res) => {
-    return res
-        .status(300)
-        .redirect("https://github.com/gepetojj/gepetoservices/wiki");
+    return res.status(300).redirect(textPack.main.redirectURL);
 });
 app.use((req, res) => {
-    return res
-        .status(404)
-        .json(
-            response(
-                true,
-                "Esse endpoint não existe. Verifique o método ou a escrita e tente novamente.",
-                { method: req.method, endpoint: req.path }
-            )
-        );
+    return res.status(404).json(
+        response(true, textPack.main.notFound, {
+            method: req.method,
+            endpoint: req.path,
+        })
+    );
 });
 
 app.listen(port, () => {
-    console.log("Servidor online.");
+    console.log(textPack.main.serverStart);
 });
 
 module.exports = app;

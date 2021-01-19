@@ -5,6 +5,7 @@ const validator = require("validator");
 const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
 const retryHandler = require("../../assets/retryHandler");
+const textPack = require("../../assets/textPack.json");
 
 const Performance = require("../../assets/tests/performance");
 
@@ -26,19 +27,17 @@ async function storageLog(req, filename) {
             } else {
                 return {
                     error: true,
-                    message: "Você não é dono deste arquivo ou ele não existe.",
+                    message: textPack.storage.delete.notOwnerOrDoesntExists,
                 };
             }
         } else {
             return {
                 error: true,
-                message: "Você não é dono deste arquivo.",
+                message: textPack.storage.delete.notOwner,
             };
         }
     } catch (err) {
-        throw new Error(
-            "Não foi possível verificar se este arquivo é seu. Tente novamente."
-        );
+        throw new Error(textPack.standards.responseError);
     }
 }
 
@@ -64,29 +63,23 @@ async function deleteFile(req, filename) {
                         },
                     });
                 } catch (err) {
-                    throw new Error(
-                        "Não foi possível concluir a operação. Tente novamente."
-                    );
+                    throw new Error(textPack.standards.responseError);
                 }
             } else {
                 return {
                     error: true,
-                    message: "Você não tem permissão para isso.",
+                    message: textPack.storage.delete.lackOfPermission,
                 };
             }
         } catch (err) {
-            throw new Error(
-                "Não foi possível atualizar seus uploads. Tente novamente."
-            );
+            throw new Error(textPack.standards.responseError);
         }
         return {
             error: false,
-            message: "Arquivo deletado com sucesso.",
+            message: textPack.standards.responseOK,
         };
     } catch (err) {
-        throw new Error(
-            "Não foi possível deletar este arquivo. Tente novamente."
-        );
+        throw new Error(textPack.standards.responseError);
     }
 }
 
@@ -98,12 +91,12 @@ router.delete("/", async (req, res) => {
         performanceLog.finish();
         return res
             .status(400)
-            .json(response(true, "O nome do arquivo não pode ser nulo."));
+            .json(response(true, textPack.standards.nullField));
     } else if (validator.isEmpty(filename)) {
         performanceLog.finish();
         return res
             .status(400)
-            .json(response(true, "O nome do arquivo não pode ser nulo."));
+            .json(response(true, textPack.standards.nullField));
     }
 
     const isUserOwner = await retryHandler(
