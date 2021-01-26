@@ -1,168 +1,107 @@
 const express = require("express");
 const router = express.Router();
-const axios = require("axios");
-const formData = require("form-data");
-const fs = require("fs");
-const moment = require("moment-timezone");
-
-moment().locale("pt-br");
-moment().tz("America/Maceio");
 
 const API = require("../../assets/api");
 const response = require("../../assets/response");
+const status = require("../../assets/status");
 const textPack = require("../../assets/textPack.json");
 
 const Performance = require("../../assets/tests/performance");
 
-function classifier(statusCode, timeToRespond) {
-    if (statusCode > 199 < 300 && timeToRespond < 2000) {
-        return "OK";
-    } else if (statusCode > 199 < 300 && timeToRespond > 2000) {
-        return "ALERT";
-    } else if (statusCode > 299) {
-        return "ERROR";
-    } else {
-        return "UNKNOWN";
-    }
-}
-
 router.get("/", async (req, res) => {
-    const performanceLog = new Performance("/status");
-    let testResults = {
-        translator: {
-            statusCode: 0,
-            timeToRespond: 0,
-            classifiedAs: "nt",
-        },
-        upload: {
-            statusCode: 0,
-            timeToRespond: 0,
-            classifiedAs: "nt",
-        },
-        access: {
-            statusCode: 0,
-            timeToRespond: 0,
-            classifiedAs: "nt",
-        },
-        delete: {
-            statusCode: 0,
-            timeToRespond: 0,
-            classifiedAs: "nt",
-        },
-    };
+	const performanceLog = new Performance("/status");
+	let testResults = {
+		translator: {
+			statusCode: 0,
+			timeToRespond: 0,
+			classifiedAs: "",
+		},
+		upload: {
+			statusCode: 0,
+			timeToRespond: 0,
+			classifiedAs: "",
+		},
+		access: {
+			statusCode: 0,
+			timeToRespond: 0,
+			classifiedAs: "",
+		},
+		delete: {
+			statusCode: 0,
+			timeToRespond: 0,
+			classifiedAs: "",
+		},
+	};
 
-    try {
-        const translatorTestStart = moment().valueOf();
-        try {
-            var translatorTest = await axios.get(
-                API(`/translator?text=testando essa API&from=pt&to=en`)
-            );
-            testResults.translator.statusCode = translatorTest.status;
-        } catch (err) {
-            testResults.translator.statusCode = err.response.status;
-        }
-        const translatorTestEnd = moment().valueOf();
-        const translatorTimeToRespond = Number(
-            moment(translatorTestEnd - translatorTestStart).format("x")
-        );
-        testResults.translator.timeToRespond = translatorTimeToRespond;
-        testResults.translator.classifiedAs = classifier(
-            testResults.translator.statusCode,
-            translatorTimeToRespond
-        );
-        performanceLog.watchpoint("translatorTest");
+	try {
+		performanceLog.watchpoint("translatorTest");
+		await status(`/translator?text=testando essa API&from=pt&to=en`)
+			.get()
+			.then((test) => {
+				testResults.translator = test;
+			})
+			.catch((test) => {
+				testResults.translator = test;
+			});
+		performanceLog.watchpointEnd("translatorTest");
 
-        let testImageName = "";
+		let testImageName = "";
 
-        const uploadTestStart = moment().valueOf();
-        try {
-            const testImage = new formData();
-            testImage.append(
-                "file",
-                fs.createReadStream(
-                    `${process.cwd()}/assets/tests/testImage.png`
-                )
-            );
-            var uploadTest = await axios.post(
-                API(`/storage/upload`),
-                testImage,
-                {
-                    headers: testImage.getHeaders(),
-                }
-            );
-            testImageName = uploadTest.data.filename;
-            testResults.upload.statusCode = uploadTest.status;
-        } catch (err) {
-            testResults.upload.statusCode = err.response.status;
-        }
-        const uploadTestEnd = moment().valueOf();
-        const uploadTimeToRespond = Number(
-            moment(uploadTestEnd - uploadTestStart).format("x")
-        );
-        testResults.upload.timeToRespond = uploadTimeToRespond;
-        testResults.upload.classifiedAs = classifier(
-            testResults.upload.statusCode,
-            uploadTimeToRespond
-        );
-        performanceLog.watchpoint("uploadTest");
+		performanceLog.watchpoint("uploadTest");
+		await status(`/storage/upload`)
+			.post()
+			.then((test) => {
+				testImageName = test.filename;
+				testResults.upload.statusCode = test.statusCode;
+				testResults.upload.timeToRespond = test.timeToRespond;
+				testResults.upload.classifiedAs = test.classifiedAs;
+			})
+			.catch((test) => {
+				testResults.upload.statusCode = test.statusCode;
+				testResults.upload.timeToRespond = test.timeToRespond;
+				testResults.upload.classifiedAs = test.classifiedAs;
+			});
+		performanceLog.watchpointEnd("uploadTest");
 
-        const accessTestStart = moment().valueOf();
-        try {
-            var accessTest = await axios.get(
-                API(`/storage/access?filename=${testImageName}`)
-            );
-            testResults.access.statusCode = accessTest.status;
-        } catch (err) {
-            testResults.access.statusCode = err.response.status;
-        }
-        const accessTestEnd = moment().valueOf();
-        const accessTimeToRespond = Number(
-            moment(accessTestEnd - accessTestStart).format("x")
-        );
-        testResults.access.timeToRespond = accessTimeToRespond;
-        testResults.access.classifiedAs = classifier(
-            testResults.access.statusCode,
-            accessTimeToRespond
-        );
-        performanceLog.watchpoint("accessTest");
+		performanceLog.watchpoint("accessTest");
+		await status(`/storage/access?filename=${testImageName}`)
+			.get()
+			.then((test) => {
+				testResults.access = test;
+			})
+			.catch((test) => {
+				testResults.access = test;
+			});
+		performanceLog.watchpointEnd("accessTest");
 
-        const deleteTestStart = moment().valueOf();
-        try {
-            var deleteTest = await axios.delete(
-                API(`/storage/delete?filename=${testImageName}`)
-            );
-            testResults.delete.statusCode = deleteTest.status;
-        } catch (err) {
-            testResults.delete.statusCode = err.response.status;
-        }
-        const deleteTestEnd = moment().valueOf();
-        const deleteTimeToRespond = Number(
-            moment(deleteTestEnd - deleteTestStart).format("x")
-        );
-        testResults.delete.timeToRespond = deleteTimeToRespond;
-        testResults.delete.classifiedAs = classifier(
-            testResults.delete.statusCode,
-            deleteTimeToRespond
-        );
-        performanceLog.watchpoint("deleteTest");
+		performanceLog.watchpoint("deleteTest");
+		await status(`/storage/delete?filename=${testImageName}`)
+			.del()
+			.then((test) => {
+				testResults.delete = test;
+			})
+			.catch((test) => {
+				testResults.delete = test;
+			});
+		performanceLog.watchpointEnd("deleteTest");
 
-        performanceLog.finish();
-        return res.json(
-            response(false, textPack.status.responseOK, {
-                storage: {
-                    access: testResults.access,
-                    delete: testResults.delete,
-                    upload: testResults.upload,
-                },
-                translator: testResults.translator,
-            })
-        );
-    } catch (err) {
-        console.error(err);
-        return res
-            .status(500)
-            .json(response(true, textPack.standards.responseError));
-    }
+		performanceLog.finish();
+		return res.json(
+			response(false, textPack.status.responseOK, {
+				storage: {
+					access: testResults.access,
+					delete: testResults.delete,
+					upload: testResults.upload,
+				},
+				translator: testResults.translator,
+			})
+		);
+	} catch (err) {
+		console.error(err);
+		return res
+			.status(500)
+			.json(response(true, textPack.standards.responseError));
+	}
 });
 
 module.exports = router;

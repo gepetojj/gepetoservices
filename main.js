@@ -4,8 +4,8 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const compression = require("compression");
 const fileUpload = require("express-fileupload");
-const getIp = require("./assets/getIp");
-const rateLimiter = require("./assets/rateLimiter");
+const getIp = require("./assets/middlewares/getIp");
+const rateLimiter = require("./assets/middlewares/rateLimiter");
 const helmet = require("helmet");
 
 const apiHandler = require("./api/handler");
@@ -15,22 +15,22 @@ const textPack = require("./assets/textPack.json");
 const app = express();
 const port = process.env.PORT;
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(helmet());
 app.use(
     cors({
         origin: "*",
     })
 );
+app.use(getIp);
+app.use(rateLimiter);
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 app.use(compression());
 app.use(
     fileUpload({
         createParentPath: true,
     })
 );
-app.use(getIp);
-app.use(rateLimiter);
-app.use(helmet());
 
 app.use("/api", apiHandler);
 
