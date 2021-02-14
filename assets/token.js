@@ -18,7 +18,6 @@ function token() {
 				{
 					...params,
 					tokenId,
-					generatedAt: moment().valueOf(),
 				},
 				process.env.JWT_SECRET,
 				{ expiresIn }
@@ -51,7 +50,7 @@ function token() {
 							code: 500,
 						});
 					}
-
+					
 					if (data === null || data !== "true") {
 						reject({
 							message: textPack.authorize.invalidToken,

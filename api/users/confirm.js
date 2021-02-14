@@ -10,27 +10,33 @@ const Token = require("../../assets/token");
 const Performance = require("../../assets/tests/performance");
 
 async function getCurrentUserState(id) {
-	try {
-		const userState = await User.findOne({ _id: id });
-		if (userState) {
-			return { error: false, state: userState.state };
-		} else {
-			return { error: true, message: "Usuário inexistente." };
+	const promise = new Promise(async (resolve, reject) => {
+		try {
+			const userState = await User.findOne({ _id: id });
+			if (userState) {
+				resolve(userState.state);
+			} else {
+				reject("Usuário inexistente.");
+			}
+		} catch (err) {
+			console.error(err);
+			reject(err.message);
 		}
-	} catch (err) {
-		console.error(err);
-		return { error: true, message: err };
-	}
+	});
+	return promise;
 }
 
 async function changeUserState(id, newState) {
-	try {
-		await User.updateOne({ _id: id }, { state: { ...newState } });
-		return { error: false };
-	} catch (err) {
-		console.error(err);
-		return { error: true, message: err };
-	}
+	const promise = new Promise(async (resolve, reject) => {
+		try {
+			await User.updateOne({ _id: id }, { state: { ...newState } });
+			resolve();
+		} catch (err) {
+			console.error(err);
+			reject(err.message);
+		}
+	});
+	return promise;
 }
 
 router.get("/", async (req, res) => {
@@ -46,71 +52,46 @@ router.get("/", async (req, res) => {
 
 	t = decodeURIComponent(t);
 
-	await Token()
-		.verify(t)
-		.then(async (decoded) => {
-			await Token()
-				.revoke(decoded.tokenId)
-				.then(async () => {
-					performanceLog.watchpoint("getCurrentUserState");
-					const userState = await getCurrentUserState(decoded.id);
-					if (userState.error) {
-						performanceLog.watchpointEnd("getCurrentUserState");
-						performanceLog.finish();
-						return res
-							.status(500)
-							.json(
-								response(true, textPack.standards.responseError)
-							);
-					} else {
-						performanceLog.watchpointEnd("getCurrentUserState");
-						switch (decoded.scope) {
-							case "confirmEmail":
-								if (
-									userState.state.emailConfirmed ===
-									decoded.newState
-								) {
-									performanceLog.finish();
-									return res
-										.status(400)
-										.json(
-											response(
-												true,
-												textPack.users.confirmEmail
-													.emailAlreadyConfirmed
-											)
-										);
-								}
-
-								performanceLog.watchpoint("changeUserState");
-								const cusOperation = await changeUserState(
-									decoded.id,
-									{
-										emailConfirmed: decoded.newState,
-										banned: userState.state.banned,
-										reason: userState.state.reason,
-										banDate: userState.state.banDate,
-									}
+	Promise.resolve([])
+		.then(async (all) => {
+			return await Token()
+				.verify(t)
+				.then((decoded) => {
+					all.push(decoded);
+					return all;
+				})
+				.catch((err) => {
+					throw new Error(`${err.code}:${err.message}`);
+				});
+		})
+		.then(async (all) => {
+			return await Token()
+				.revoke(all[0].tokenId)
+				.then(() => {
+					return all;
+				})
+				.catch(() => {
+					throw new Error(`500:${textPack.standards.responseError}`);
+				});
+		})
+		.then(async (all) => {
+			return await getCurrentUserState(all[0].id)
+				.then(async (state) => {
+					switch (all[0].scope) {
+						case "confirmEmail":
+							if (state.emailConfirmed === all[0].newState) {
+								throw new Error(
+									`400:${textPack.users.confirmEmail.emailAlreadyConfirmed}`
 								);
+							}
 
-								if (cusOperation.error) {
-									performanceLog.watchpointEnd(
-										"changeUserState"
-									);
-									performanceLog.finish();
-									return res
-										.status(500)
-										.json(
-											response(
-												true,
-												textPack.users.confirmEmail
-													.couldNotConfirmEmail
-											)
-										);
-								} else {
-									performanceLog.watchpointEnd(
-										"changeUserState"
-									);
+							await changeUserState(all[0].id, {
+								emailConfirmed: all[0].newState,
+								banned: state.banned,
+								reason: state.reason,
+								banDate: state.banDate,
+							})
+								.then(() => {
 									performanceLog.finish();
 									return res.json(
 										response(
@@ -119,18 +100,22 @@ router.get("/", async (req, res) => {
 												.emailConfirmed
 										)
 									);
-								}
-						}
+								})
+								.catch(() => {
+									throw new Error(
+										`500:${textPack.users.confirmEmail.couldNotConfirmEmail}`
+									);
+								});
 					}
 				})
 				.catch((err) => {
-					return res
-						.status(err.code)
-						.json(response(true, err.message));
+					throw new Error(`500:${err}`);
 				});
 		})
 		.catch((err) => {
-			return res.status(err.code).json(response(true, err.message));
+			performanceLog.finish();
+			const error = err.message.split(":");
+			return res.status(error[0]).json(response(true, error[1]));
 		});
 });
 

@@ -181,7 +181,7 @@ router.put("/", authorize, async (req, res) => {
 						deleteOldAvatar(uid)
 							.catch(() => {
 								throw new Error(
-									textPack.users.change.avatar.couldntDeleteOldAvatar
+									`500:${textPack.users.change.avatar.couldntDeleteOldAvatar}`
 								);
 							})
 							.then(() => {
@@ -192,7 +192,7 @@ router.put("/", authorize, async (req, res) => {
 				})
 				.catch(() => {
 					throw new Error(
-						textPack.users.change.avatar.couldntDeleteOldAvatar
+						`500:${textPack.users.change.avatar.couldntDeleteOldAvatar}`
 					);
 				});
 		})
@@ -203,7 +203,7 @@ router.put("/", authorize, async (req, res) => {
 					return all;
 				})
 				.catch(() => {
-					throw new Error(textPack.standards.responseError);
+					throw new Error(`500:${textPack.standards.responseError}`);
 				});
 		})
 		.then(async (all) => {
@@ -215,7 +215,7 @@ router.put("/", authorize, async (req, res) => {
 				})
 				.catch(() => {
 					throw new Error(
-						textPack.users.change.avatar.avatarNotUploaded
+						`500:${textPack.users.change.avatar.avatarNotUploaded}`
 					);
 				});
 		})
@@ -226,7 +226,7 @@ router.put("/", authorize, async (req, res) => {
 				})
 				.catch(() => {
 					throw new Error(
-						textPack.users.change.avatar.avatarNotUploaded
+						`500:${textPack.users.change.avatar.avatarNotUploaded}`
 					);
 				});
 		})
@@ -239,7 +239,9 @@ router.put("/", authorize, async (req, res) => {
 						originalImageDeletion.error ||
 						resizedImageDeletion.error
 					) {
-						throw new Error(textPack.standards.responseError);
+						throw new Error(
+							`500:${textPack.standards.responseError}`
+						);
 					}
 					performanceLog.finish();
 					return res.json(
@@ -257,13 +259,16 @@ router.put("/", authorize, async (req, res) => {
 						originalImageDeletion.error ||
 						resizedImageDeletion.error
 					) {
-						throw new Error(textPack.standards.responseError);
+						throw new Error(
+							`500:${textPack.standards.responseError}`
+						);
 					}
 				});
 		})
 		.catch((err) => {
 			performanceLog.finish();
-			return res.status(500).json(response(true, err.message));
+			const error = err.message.split(":");
+			return res.status(error[0]).json(response(true, error[1]));
 		});
 });
 
