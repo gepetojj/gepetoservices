@@ -10,7 +10,7 @@ const API = require("../../assets/api");
 const validator = require("../../assets/validator");
 const textPack = require("../../assets/textPack.json");
 const User = require("../../assets/models/User");
-const Token = require("../../assets/Token");
+const Token = require("../../assets/token");
 
 const Performance = require("../../assets/tests/performance");
 
