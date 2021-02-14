@@ -39,16 +39,39 @@ const minimizedLimiter = new RateLimiterMemory({
 	inmemoryBlockDuration: blockDuration,
 });
 
+function getHeaders(limiter, type = "normal") {
+	if (type !== "normal") {
+		const headers = {
+			"Retry-After": limiter.msBeforeNext / 1000,
+			"X-RateLimit-Limit": minimizedPoints,
+			"X-RateLimit-Remaining": limiter.remainingPoints,
+			"X-RateLimit-Reset": new Date(Date.now() + limiter.msBeforeNext),
+		};
+		return headers;
+	} else {
+		const headers = {
+			"Retry-After": limiter.msBeforeNext / 1000,
+			"X-RateLimit-Limit": points,
+			"X-RateLimit-Remaining": limiter.remainingPoints,
+			"X-RateLimit-Reset": new Date(Date.now() + limiter.msBeforeNext),
+		};
+		return headers;
+	}
+}
+
 const rateLimiter = (req, res, next) => {
 	if (req.path === "/api/status/" || req.path === "/api/status") {
 		minimizedLimiter
 			.consume(req.ip)
-			.then(() => {
-				res.set("X-Rate-Limit-Status", "OK");
+			.then((limiter) => {
+				const headers = getHeaders(limiter, "minimized");
+				res.set(headers);
 				next();
 			})
-			.catch(() => {
-				res.set("X-Rate-Limit-Status", "LIMITED");
+			.catch((limiter) => {
+				const headers = getHeaders(limiter, "minimized");
+				res.set(headers);
+
 				return res.status(429).json(
 					response(true, textPack.rateLimiter.responseError, {
 						limit: `${points - 45} requests em ${Math.floor(
@@ -60,12 +83,15 @@ const rateLimiter = (req, res, next) => {
 	} else {
 		normalLimiter
 			.consume(req.ip)
-			.then(() => {
-				res.set("X-Rate-Limit-Status", "OK");
+			.then((limiter) => {
+				const headers = getHeaders(limiter);
+				res.set(headers);
 				next();
 			})
-			.catch(() => {
-				res.set("X-Rate-Limit-Status", "LIMITED");
+			.catch((limiter) => {
+				const headers = getHeaders(limiter);
+				res.set(headers);
+
 				return res.status(429).json(
 					response(true, textPack.rateLimiter.responseError, {
 						limit: `${points} requests em ${Math.floor(

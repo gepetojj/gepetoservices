@@ -6,7 +6,6 @@ const fs = require("fs");
 
 const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
-const retryHandler = require("../../assets/retryHandler");
 const textPack = require("../../assets/textPack.json");
 
 const Performance = require("../../assets/tests/performance");
@@ -16,86 +15,130 @@ const database = firebase.firestore().collection("storageLog");
 moment().locale("pt-br");
 moment().tz("America/Maceio");
 
-async function verifyUserLimits(req) {
+function verifyUserLimits(ip) {
+	const promise = new Promise(async (resolve, reject) => {
+		await database
+			.doc(ip)
+			.get()
+			.then((doc) => {
+				if (doc.exists) {
+					const data = doc.data();
+					if (data.uploads.quantity >= 7) {
+						reject(textPack.storage.upload.limitReached);
+					} else {
+						resolve();
+					}
+				} else {
+					resolve();
+				}
+			})
+			.catch((err) => {
+				console.error(err);
+				reject(textPack.storage.upload.limitError);
+			});
+	});
+	return promise;
+}
+
+function logUserAction(ip, filename) {
+	const promise = new Promise(async (resolve, reject) => {
+		await database
+			.doc(ip)
+			.get()
+			.then(async (doc) => {
+				if (doc.exists) {
+					const data = doc.data();
+					await database
+						.doc(ip)
+						.update({
+							uploads: {
+								quantity: data.uploads.quantity + 1,
+								files: [...data.uploads.files, filename],
+							},
+						})
+						.then(() => {
+							resolve();
+						})
+						.catch((err) => {
+							console.error(err);
+							reject(textPack.standards.responseError);
+						});
+				} else {
+					await database
+						.doc(ip)
+						.set({
+							uploader: ip,
+							uploads: {
+								quantity: 1,
+								files: [filename],
+							},
+						})
+						.then(() => {
+							resolve();
+						})
+						.catch((err) => {
+							console.error(err);
+							reject(textPack.standards.responseError);
+						});
+				}
+			});
+	});
+	return promise;
+}
+
+function deleteCloudFile(filename) {
+	const promise = new Promise(async (resolve, reject) => {
+		const file = bucket.file(filename);
+		await file
+			.delete()
+			.then(() => {
+				resolve(textPack.storage.upload.uploadCanceled);
+			})
+			.catch((err) => {
+				console.error(err);
+				reject(textPack.storage.upload.uploadCanceledError);
+			});
+	});
+	return promise;
+}
+
+function deleteLocalFile(path) {
 	try {
-		const limit = await database.doc(req.ip).get();
-		if (limit.exists) {
-			const data = limit.data();
-			const maxUploads = data.uploads.quantity >= 7;
-			if (maxUploads) {
-				return {
-					error: true,
-					message: textPack.storage.upload.limitReached,
-				};
-			} else {
-				return {
-					error: false,
-					message: "",
-				};
-			}
-		} else {
-			return {
-				error: false,
-				message: "",
-			};
-		}
+		fs.unlinkSync(path);
+		return { error: false };
 	} catch (err) {
-		throw new Error(textPack.storage.upload.limitError);
+		console.error(err);
+		return { error: true, message: textPack.standards.responseError };
 	}
 }
 
-async function logUserAction(req, filename) {
-	try {
-		const log = await database.doc(req.ip).get();
-		if (!log.exists) {
-			try {
-				await database.doc(req.ip).set({
-					uploader: req.ip,
-					uploads: {
-						quantity: 1,
-						files: [filename],
-					},
-				});
-			} catch (err) {
-				throw new Error(textPack.standards.responseError);
+function moveFile(file, filename) {
+	const promise = new Promise((resolve, reject) => {
+		const path = `${process.cwd()}\\temp\\${filename}`;
+		file.mv(path, (err) => {
+			if (err) {
+				console.error(err);
+				reject(textPack.standards.responseError);
 			}
-			return {
-				error: false,
-				message: "",
-			};
-		} else {
-			const data = log.data();
-			try {
-				await database.doc(req.ip).update({
-					uploads: {
-						quantity: data.uploads.quantity + 1,
-						files: [...data.uploads.files, filename],
-					},
-				});
-			} catch (err) {
-				throw new Error(textPack.standards.responseError);
-			}
-			return {
-				error: false,
-				message: "",
-			};
-		}
-	} catch (err) {
-		throw new Error(textPack.standards.nullField);
-	}
+			resolve(path);
+		});
+	});
+	return promise;
 }
 
-async function deleteFile(bucket, filename) {
-	const file = bucket.file(filename);
-	try {
-		await file.delete();
-		return {
-			error: true,
-			message: textPack.storage.upload.uploadCanceled,
-		};
-	} catch (err) {
-		throw new Error(textPack.storage.upload.uploadCanceledError);
-	}
+function uploadFile(path, checksum) {
+	const promise = new Promise(async (resolve, reject) => {
+		await bucket
+			.upload(path, { gzip: true, validation: checksum })
+			.then(() => {
+				resolve();
+			})
+			.catch((err) => {
+				console.error(err);
+				reject(textPack.standards.responseError);
+			});
+	});
+	return promise;
 }
 
 router.post("/", async (req, res) => {
@@ -115,113 +158,93 @@ router.post("/", async (req, res) => {
 		return res
 			.status(400)
 			.json(response(true, textPack.storage.upload.fileLimit));
-	} else if (!mimeTypes.includes(file.mimetype.split("/")[0])) {
+	}
+
+	if (!mimeTypes.includes(file.mimetype.split("/")[0])) {
 		performanceLog.finish();
 		return res
 			.status(400)
 			.json(response(true, textPack.storage.upload.fileType));
 	}
 
-	performanceLog.watchpoint("userLimits");
-	const userLimits = await retryHandler(verifyUserLimits.bind(this, req), 2);
-	const tries = userLimits.length - 1;
-	if (userLimits[tries].error === true) {
-		performanceLog.finish();
-		return res.status(500).json(response(true, userLimits[tries].data));
-	} else {
-		if (userLimits[tries].data.error === true) {
-			performanceLog.finish();
-			return res
-				.status(400)
-				.json(response(true, userLimits[tries].data.message));
-		}
-	}
-	performanceLog.watchpointEnd("userLimits");
+	let promisesResults = [];
 
-	performanceLog.watchpoint("fileMove");
-	const filename = moment().format(
-		`DD-MM-YYYY_hh-mm-ssa_[${shortid.generate()}.${
-			file.mimetype.split("/")[1]
-		}]`
-	);
-	file.mv(`${process.cwd()}/temp/${filename}`, (err) => {
-		if (err) {
-			performanceLog.watchpointEnd("fileMove");
-			console.error(err);
-			performanceLog.finish();
-			return res
-				.status(500)
-				.json(response(true, textPack.standards.responseError));
-		}
-		performanceLog.watchpointEnd("fileMove");
-
-		performanceLog.watchpoint("fileUpload");
-		bucket
-			.upload(`${process.cwd()}/temp/${filename}`, {
-				gzip: true,
-				validation: file.md5,
-			})
-			.then(async () => {
-				performanceLog.watchpointEnd("fileUpload");
-				fs.unlinkSync(`${process.cwd()}/temp/${filename}`, (err) => {
-					if (err) {
-						console.error(err);
-					}
+	Promise.resolve(promisesResults)
+		.then(async (all) => {
+			return await verifyUserLimits(req.ip)
+				.then(() => {
+					return all;
+				})
+				.catch((err) => {
+					throw new Error(err);
 				});
-
-				const logAction = await retryHandler(
-					logUserAction.bind(this, req, filename),
-					2
-				);
-				const logActionTries = logAction.length - 1;
-
-				if (logAction[logActionTries].error === true) {
-					const deleteFileAfterError = await retryHandler(
-						deleteFile.bind(this, bucket, filename),
-						2
+		})
+		.then(async (all) => {
+			const filename = moment().format(
+				`DD-MM-YYYY_hh-mm-ssa_[${shortid.generate()}.${
+					file.mimetype.split("/")[1]
+				}]`
+			);
+			all.push(filename);
+			return await moveFile(file, filename)
+				.then((path) => {
+					all.push(path);
+					return all;
+				})
+				.catch((err) => {
+					throw new Error(err);
+				});
+		})
+		.then(async (all) => {
+			return await uploadFile(all[1], file.md5)
+				.then(() => {
+					all.push("uploaded");
+					return all;
+				})
+				.catch((err) => {
+					throw new Error(err);
+				});
+		})
+		.then((all) => {
+			const fileDeletion = deleteLocalFile(all[1]);
+			if (fileDeletion.error) {
+				throw new Error(fileDeletion.message);
+			}
+			return all;
+		})
+		.then(async (all) => {
+			return await logUserAction(req.ip, all[0])
+				.then(() => {
+					performanceLog.finish();
+					return res.json(
+						response(false, textPack.standards.responseOK, {
+							filename: all[0],
+						})
 					);
-					const dfaErrorTries = deleteFileAfterError.length - 1;
-
-					if (deleteFileAfterError[dfaErrorTries].error === true) {
+				})
+				.catch((err) => {
+					throw new Error(err);
+				});
+		})
+		.catch(async (err) => {
+			console.error(err);
+			if (promisesResults[2] === "uploaded") {
+				await deleteCloudFile(promisesResults[0])
+					.then((msg) => {
 						performanceLog.finish();
-						return res
-							.status(500)
-							.json(
-								response(
-									true,
-									deleteFileAfterError[dfaErrorTries].data
-								)
-							);
-					} else {
-						performanceLog.finish();
-						return res
-							.status(500)
-							.json(
-								response(
-									true,
-									deleteFileAfterError[dfaErrorTries].data
-										.message
-								)
-							);
-					}
-				}
-
-				performanceLog.finish();
-				return res.json(
-					response(false, textPack.standards.responseOK, {
-						filename,
+						return res.status(500).json(response(true, msg));
 					})
-				);
-			})
-			.catch((err) => {
-				performanceLog.watchpointEnd("fileUpload");
-				console.error(err);
+					.catch((error) => {
+						performanceLog.finish();
+						return res
+							.status(500)
+							.json(response(true, error.message));
+					});
+			} else {
 				performanceLog.finish();
-				return res
-					.status(500)
-					.json(response(true, textPack.standards.responseError));
-			});
-	});
+				return res.status(500).json(response(true, err.message));
+			}
+		});
 });
 
 module.exports = router;

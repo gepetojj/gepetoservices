@@ -87,12 +87,7 @@ router.delete("/", async (req, res) => {
 	const performanceLog = new Performance("/storage/delete");
 	const { filename } = req.query;
 
-	if (filename === undefined) {
-		performanceLog.finish();
-		return res
-			.status(400)
-			.json(response(true, textPack.standards.nullField));
-	} else if (validator.isEmpty(filename)) {
+	if (!filename) {
 		performanceLog.finish();
 		return res
 			.status(400)

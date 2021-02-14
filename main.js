@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const compression = require("compression");
@@ -17,9 +18,9 @@ const port = process.env.PORT;
 
 app.use(helmet());
 app.use(
-    cors({
-        origin: "*",
-    })
+	cors({
+		origin: "*",
+	})
 );
 app.use(getIp);
 app.use(rateLimiter);
@@ -27,27 +28,40 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(compression());
 app.use(
-    fileUpload({
-        createParentPath: true,
-    })
+	fileUpload({
+		createParentPath: true,
+	})
 );
+
+const mongoDB = process.env.MONGO_URI;
+mongoose.connect(mongoDB, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true,
+	useCreateIndex: true,
+});
+mongoose.connection.on("error", (err) => {
+	console.error(`Erro no MongoDB: ${err}`);
+	throw new Error(err);
+});
 
 app.use("/api", apiHandler);
 
 app.get("/", (req, res) => {
-    return res.status(300).redirect(textPack.main.redirectURL);
+	return res.status(300).redirect(textPack.main.redirectURL);
 });
 app.use((req, res) => {
-    return res.status(404).json(
-        response(true, textPack.main.notFound, {
-            method: req.method,
-            endpoint: req.path,
-        })
-    );
+	return res.status(404).json(
+		response(true, textPack.main.notFound, {
+			method: req.method,
+			endpoint: req.path,
+		})
+	);
 });
 
-app.listen(port, () => {
-    console.log(textPack.main.serverStart);
+app.listen(port, "0.0.0.0", () => {
+	console.log(textPack.main.serverStart);
 });
 
-module.exports = app;
+if (process.env.NODE_ENV === "development") {
+	module.exports = app;
+}

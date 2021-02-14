@@ -1,10 +1,18 @@
 const express = require("express");
 const router = express.Router();
 
-const create = require("./create");
+const register = require("./register");
+const confirm = require("./confirm");
+const login = require("./login");
 const verify = require("./verify");
 
-router.use("/create", create);
+const change = require("./change");
+
+router.use("/register", register);
+router.use("/confirm", confirm);
+router.use("/login", login);
 router.use("/verify", verify);
+
+router.use("/change", change);
 
 module.exports = router;

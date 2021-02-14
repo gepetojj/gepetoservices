@@ -1,7 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-const API = require("../../assets/api");
 const response = require("../../assets/response");
 const status = require("../../assets/status");
 const textPack = require("../../assets/textPack.json");
