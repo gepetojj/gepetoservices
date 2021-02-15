@@ -114,7 +114,7 @@ function deleteLocalFile(path) {
 
 function moveFile(file, filename) {
 	const promise = new Promise((resolve, reject) => {
-		const path = `${process.cwd()}\\temp\\${filename}`;
+		const path = `${process.cwd()}/temp/${filename}`;
 		file.mv(path, (err) => {
 			if (err) {
 				console.error(err);

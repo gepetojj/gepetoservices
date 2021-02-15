@@ -10,10 +10,12 @@ moment().tz("America/Maceio");
 
 function status(endpoint = undefined) {
 	function classify(statusCode, timeToRespond) {
-		if (statusCode > 199 < 300 && timeToRespond < 2000) {
-			return "OK";
-		} else if (statusCode > 199 < 300 && timeToRespond > 2000) {
-			return "ALERT";
+		if (statusCode > 199 && statusCode < 300) {
+			if (timeToRespond < 1700) {
+				return "OK";
+			} else {
+				return "ALERT";
+			}
 		} else if (statusCode > 299) {
 			return "ERROR";
 		} else {
