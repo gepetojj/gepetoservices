@@ -60,7 +60,7 @@ function getHeaders(limiter, type = "normal") {
 }
 
 const rateLimiter = (req, res, next) => {
-	if (req.path === "/api/status/" || req.path === "/api/status") {
+	if (textPack.rateLimiter.endpoints.includes(req.path)) {
 		minimizedLimiter
 			.consume(req.ip)
 			.then((limiter) => {

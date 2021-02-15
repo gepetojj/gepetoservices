@@ -42,7 +42,7 @@ async function revokeLastLoginToken(id) {
 		try {
 			const data = await User.findOne({ _id: id });
 			if (data.lastLogin.token) {
-				Token()
+				await Token()
 					.revoke(data.lastLogin.token)
 					.then(() => {
 						resolve();

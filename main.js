@@ -8,6 +8,8 @@ const fileUpload = require("express-fileupload");
 const getIp = require("./assets/middlewares/getIp");
 const rateLimiter = require("./assets/middlewares/rateLimiter");
 const helmet = require("helmet");
+const hsts = require("hsts");
+const enforceSSL = require("express-enforces-ssl");
 
 const apiHandler = require("./api/handler");
 const response = require("./assets/response");
@@ -16,6 +18,17 @@ const textPack = require("./assets/textPack.json");
 const app = express();
 const port = process.env.PORT;
 
+if (process.env.NODE_ENV === "production") {
+	app.enable("trust proxy");
+	app.use(enforceSSL());
+	app.use(
+		hsts({
+			maxAge: 31536000,
+			includeSubDomains: true,
+			preload: true,
+		})
+	);
+}
 app.use(helmet());
 app.use(
 	cors({

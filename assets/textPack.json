@@ -5,7 +5,19 @@
 		"serverStart": "Servidor online."
 	},
 	"rateLimiter": {
-		"responseError": "Você atingiu o limite de requests ao servidor."
+		"responseError": "Você atingiu o limite de requests ao servidor.",
+		"endpoints": [
+			"/api/status",
+			"/api/status/",
+			"/api/change/avatar",
+			"/api/change/avatar/",
+			"/api/storage/upload",
+			"/api/storage/upload/",
+			"/api/users/register",
+			"/api/users/register/",
+			"/api/users/login",
+			"/api/users/login/"
+		]
 	},
 	"authorize": {
 		"nullToken": "Seu token de autorização não pode ser nulo.",
