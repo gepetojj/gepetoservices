@@ -142,7 +142,7 @@ function uploadFile(path, checksum) {
 }
 
 router.post("/", async (req, res) => {
-	const performanceLog = new Performance("/storage/upload");
+	const performanceLog = new Performance(req.baseUrl);
 	if (!req.files) {
 		performanceLog.finish();
 		return res

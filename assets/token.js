@@ -39,7 +39,7 @@ function Token() {
 				if (err) {
 					reject({
 						message: textPack.authorize.invalidToken,
-						code: 500,
+						code: 401,
 					});
 				}
 

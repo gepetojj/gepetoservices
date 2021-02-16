@@ -24,7 +24,7 @@ async function makeFilePublic(file) {
 }
 
 router.get("/", async (req, res) => {
-	const performanceLog = new Performance("/storage/access");
+	const performanceLog = new Performance(req.baseUrl);
 	let { filename } = req.query;
 
 	if (!filename) {

@@ -44,6 +44,16 @@ const User = new Schema({
 			type: Boolean,
 			default: false,
 		},
+		tfaActivated: {
+			type: Boolean,
+			default: false,
+		},
+	},
+	tfa: {
+		recoverCodes: [String],
+		secret: {
+			type: String,
+		},
 	},
 	register: {
 		date: {

@@ -115,7 +115,7 @@ async function deleteUser(id) {
 }
 
 router.post("/", async (req, res) => {
-	const performanceLog = new Performance("/users/register");
+	const performanceLog = new Performance(req.baseUrl);
 	let { username, email, password, passwordConfirm } = req.body;
 	const app = req.headers["x-from-app"] || "noapp";
 	const agent = req.headers["user-agent"];

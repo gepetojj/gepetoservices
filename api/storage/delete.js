@@ -84,7 +84,7 @@ async function deleteFile(req, filename) {
 }
 
 router.delete("/", async (req, res) => {
-	const performanceLog = new Performance("/storage/delete");
+	const performanceLog = new Performance(req.baseUrl);
 	let { filename } = req.query;
 
 	if (!filename) {

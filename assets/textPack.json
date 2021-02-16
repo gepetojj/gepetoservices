@@ -70,14 +70,15 @@
 			"wrongPassword": "Verifique sua senha e tente novamente.",
 			"wrongUsername": "Verifique seu usuário e tente novamente.",
 			"logged": "Logado com sucesso.",
-			"unknownUser": "Não foi possível encontrar seu usuário"
+			"unknownUser": "Não foi possível encontrar seu usuário."
 		},
 		"change": {
 			"avatar": {
 				"fileType": "Avatar inválido. Seu avatar só pode ser uma imagem .png, .jpg ou .jpeg.",
 				"avatarNotUploaded": "Não foi possível salvar seu avatar.",
 				"avatarUploaded": "Avatar alterado com sucesso.",
-				"couldntDeleteOldAvatar": "Não foi possível trocar seu avatar."
+				"couldntDeleteOldAvatar": "Não foi possível trocar seu avatar.",
+				"fileLimit": "Seu arquivo não pode ter mais que 3 MB."
 			}
 		},
 		"verify": {

@@ -44,11 +44,21 @@ function revokeLastLoginToken(id) {
 			const data = await User.findOne({ _id: id });
 			if (data.lastLogin.token) {
 				await Token()
-					.revoke(data.lastLogin.token)
-					.then(() => {
-						resolve();
+					.verify(data.lastLogin.token)
+					.then(async (decoded) => {
+						await Token()
+							.revoke(decoded.tokenId)
+							.then(() => {
+								resolve();
+							})
+							.catch((err) => {
+								reject(err);
+							});
 					})
 					.catch((err) => {
+						if (err.message === textPack.authorize.invalidToken) {
+							resolve();
+						}
 						reject(err);
 					});
 			} else {
@@ -107,7 +117,7 @@ function verifyAndUpdateUserApps(user, app) {
 }
 
 router.post("/", async (req, res) => {
-	const performanceLog = new Performance("/users/login");
+	const performanceLog = new Performance(req.baseUrl);
 	let { username, password } = req.body;
 	const app = req.headers["x-from-app"] || "noapp";
 	const agent = req.headers["user-agent"];
@@ -134,25 +144,19 @@ router.post("/", async (req, res) => {
 		.then(async (all) => {
 			return await findUser(username)
 				.then((data) => {
-					if (data) {
-						if (!data.state.emailConfirmed) {
-							throw new Error(
-								`401:${textPack.users.login.emailNotConfirmed}`
-							);
-						}
-
-						if (data.state.banned) {
-							throw new Error(
-								`400:${textPack.users.login.bannedUser}`
-							);
-						}
-						all.push(data);
-						return all;
-					} else {
+					if (!data.state.emailConfirmed) {
 						throw new Error(
-							`401:${textPack.users.login.wrongUsername}`
+							`401:${textPack.users.login.emailNotConfirmed}`
 						);
 					}
+
+					if (data.state.banned) {
+						throw new Error(
+							`400:${textPack.users.login.bannedUser}`
+						);
+					}
+					all.push(data);
+					return all;
 				})
 				.catch(() => {
 					throw new Error(`500:${textPack.users.login.unknownUser}`);
@@ -170,7 +174,9 @@ router.post("/", async (req, res) => {
 					}
 				})
 				.catch(() => {
-					throw new Error(`500:${textPack.standards.responseError}`);
+					throw new Error(
+						`401:${textPack.users.login.wrongPassword}`
+					);
 				});
 		})
 		.then(async (all) => {
@@ -178,11 +184,6 @@ router.post("/", async (req, res) => {
 				.then(() => {
 					const token = Token().create({
 						id: all[0]._id,
-						username: all[0].username,
-						email: all[0].email,
-						avatar: all[0].avatar,
-						state: all[0].state,
-						registerDate: all[0].register.date,
 						app,
 					});
 					if (token.error) {

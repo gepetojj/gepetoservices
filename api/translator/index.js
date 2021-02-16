@@ -15,7 +15,6 @@ router.get("/", (req, res) => {
 			.json(response(true, textPack.standards.nullFields));
 	}
 
-	text = xssFilters.uriQueryInHTMLData(text);
 	from = !from === true ? from : xssFilters.uriQueryInHTMLData(from);
 	to = xssFilters.uriQueryInHTMLData(to);
 

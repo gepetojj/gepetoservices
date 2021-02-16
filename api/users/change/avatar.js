@@ -144,7 +144,7 @@ async function updateUserAvatar(uid) {
 }
 
 router.put("/", authorize, async (req, res) => {
-	const performanceLog = new Performance("/users/change/avatar");
+	const performanceLog = new Performance(req.baseUrl);
 	const uid = req.user.id;
 
 	if (!req.files) {
@@ -161,7 +161,7 @@ router.put("/", authorize, async (req, res) => {
 		performanceLog.finish();
 		return res
 			.status(400)
-			.json(response(true, textPack.storage.upload.fileLimit));
+			.json(response(true, textPack.users.change.avatar.fileLimit));
 	}
 
 	if (mimetype[0] !== "image" || !["png", "jpeg"].includes(mimetype[1])) {

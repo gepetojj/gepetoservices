@@ -40,8 +40,21 @@ function changeUserState(id, newState) {
 	return promise;
 }
 
+function changeUserData(id, newData) {
+	const promise = new Promise(async (resolve, reject) => {
+		try {
+			await User.updateOne({ _id: id }, newData);
+			resolve();
+		} catch (err) {
+			console.error(err);
+			reject(err.message);
+		}
+	});
+	return promise;
+}
+
 router.get("/", async (req, res) => {
-	const performanceLog = new Performance("/users/confirm");
+	const performanceLog = new Performance(req.baseUrl);
 	let { t } = req.query;
 
 	if (!t) {
@@ -51,8 +64,8 @@ router.get("/", async (req, res) => {
 			.json(response(true, textPack.authorize.nullToken));
 	}
 
-	t = xssFilters.uriQueryInHTMLData(t);
 	t = decodeURIComponent(t);
+	t = xssFilters.uriQueryInHTMLData(t);
 
 	Promise.resolve([])
 		.then(async (all) => {
@@ -106,6 +119,25 @@ router.get("/", async (req, res) => {
 								.catch(() => {
 									throw new Error(
 										`500:${textPack.users.confirmEmail.couldNotConfirmEmail}`
+									);
+								});
+						case "changePassword":
+							await changeUserData(all[0].id, {
+								password: all[0].newState,
+							})
+								.then(() => {
+									performanceLog.finish();
+									return res.json(
+										response(
+											false,
+											textPack.users.confirmEmail
+												.emailConfirmed
+										)
+									);
+								})
+								.catch(() => {
+									throw new Error(
+										`500:Não foi possível confirmar sua ação.`
 									);
 								});
 					}
