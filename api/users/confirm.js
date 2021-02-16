@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
+const xssFilters = require("xss-filters");
 
 const response = require("../../assets/response");
 const textPack = require("../../assets/textPack.json");
@@ -9,7 +10,7 @@ const Token = require("../../assets/token");
 
 const Performance = require("../../assets/tests/performance");
 
-async function getCurrentUserState(id) {
+function getCurrentUserState(id) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			const userState = await User.findOne({ _id: id });
@@ -26,7 +27,7 @@ async function getCurrentUserState(id) {
 	return promise;
 }
 
-async function changeUserState(id, newState) {
+function changeUserState(id, newState) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			await User.updateOne({ _id: id }, { state: { ...newState } });
@@ -50,6 +51,7 @@ router.get("/", async (req, res) => {
 			.json(response(true, textPack.authorize.nullToken));
 	}
 
+	t = xssFilters.uriQueryInHTMLData(t);
 	t = decodeURIComponent(t);
 
 	Promise.resolve([])

@@ -8,7 +8,7 @@ const textPack = require("../../assets/textPack.json");
 const Performance = require("../../assets/tests/performance");
 
 router.get("/", async (req, res) => {
-	const performanceLog = new Performance("/status");
+	const performanceLog = new Performance("/status/");
 	let testResults = {
 		translator: {
 			statusCode: 0,

@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const xssFilters = require("xss-filters");
 
 const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
@@ -24,7 +25,7 @@ async function makeFilePublic(file) {
 
 router.get("/", async (req, res) => {
 	const performanceLog = new Performance("/storage/access");
-	const { filename } = req.query;
+	let { filename } = req.query;
 
 	if (!filename) {
 		performanceLog.finish();
@@ -32,6 +33,8 @@ router.get("/", async (req, res) => {
 			.status(400)
 			.json(response(true, textPack.standards.nullField));
 	}
+
+	filename = xssFilters.uriQueryInHTMLData(filename);
 
 	const file = bucket.file(filename);
 

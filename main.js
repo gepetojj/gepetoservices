@@ -21,15 +21,19 @@ const port = process.env.PORT;
 if (process.env.NODE_ENV === "production") {
 	app.enable("trust proxy");
 	app.use(enforceSSL());
-	app.use(
-		hsts({
-			maxAge: 31536000,
-			includeSubDomains: true,
-			preload: true,
-		})
-	);
 }
-app.use(helmet());
+app.use(
+	hsts({
+		maxAge: 31536000,
+		includeSubDomains: true,
+		preload: true,
+	})
+);
+app.use(
+	helmet({
+		hsts: false,
+	})
+);
 app.use(
 	cors({
 		origin: "*",

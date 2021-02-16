@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const validator = require("validator");
+const xssFilters = require("xss-filters");
 
 const firebase = require("../../assets/firebase");
 const response = require("../../assets/response");
@@ -85,7 +85,7 @@ async function deleteFile(req, filename) {
 
 router.delete("/", async (req, res) => {
 	const performanceLog = new Performance("/storage/delete");
-	const { filename } = req.query;
+	let { filename } = req.query;
 
 	if (!filename) {
 		performanceLog.finish();
@@ -93,6 +93,8 @@ router.delete("/", async (req, res) => {
 			.status(400)
 			.json(response(true, textPack.standards.nullField));
 	}
+
+	filename = xssFilters.uriQueryInHTMLData(filename);
 
 	performanceLog.watchpoint("isUserOwner");
 	const isUserOwner = await retryHandler(

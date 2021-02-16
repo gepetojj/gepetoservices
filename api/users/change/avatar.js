@@ -157,7 +157,7 @@ router.put("/", authorize, async (req, res) => {
 	const file = req.files.file;
 	const mimetype = file.mimetype.split("/");
 
-	if (file.size > 5242880) {
+	if (file.size > 3145728) {
 		performanceLog.finish();
 		return res
 			.status(400)

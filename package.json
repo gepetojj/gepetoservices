@@ -1,6 +1,6 @@
 {
 	"name": "gepetoservices",
-	"version": "2.0.0",
+	"version": "2.1.2",
 	"description": "Todos os serviços unificados feitos pelo Gepetojj.",
 	"main": "main.js",
 	"author": "Gepetojj",
@@ -38,7 +38,8 @@
 		"rate-limiter-flexible": "^2.2.1",
 		"redis": "^3.0.2",
 		"shortid": "^2.2.16",
-		"validator": "^13.5.2"
+		"validator": "^13.5.2",
+		"xss-filters": "^1.2.7"
 	},
 	"devDependencies": {
 		"chai": "^4.2.0",

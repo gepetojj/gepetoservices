@@ -4,6 +4,7 @@ const router = express.Router();
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const ejs = require("ejs");
+const xssFilters = require("xss-filters");
 
 const response = require("../../assets/response");
 const API = require("../../assets/api");
@@ -47,7 +48,7 @@ async function encryptPassword(password) {
 	}
 }
 
-async function generateConfirmationLink(id) {
+function generateConfirmationLink(id) {
 	const token = Token().create({
 		id,
 		scope: "confirmEmail",
@@ -142,6 +143,10 @@ router.post("/", async (req, res) => {
 	}
 
 	username = username.toLowerCase();
+	username = xssFilters.uriQueryInHTMLData(username);
+	email = xssFilters.uriQueryInHTMLData(email);
+	password = xssFilters.uriQueryInHTMLData(password);
+	passwordConfirm = xssFilters.uriQueryInHTMLData(passwordConfirm);
 
 	const validation = validator([
 		{ type: "username", value: username },

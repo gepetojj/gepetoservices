@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const moment = require("moment-timezone");
 const bcrypt = require("bcrypt");
+const xssFilters = require("xss-filters");
 
 const response = require("../../assets/response");
 const textPack = require("../../assets/textPack.json");
@@ -11,7 +12,7 @@ const Token = require("../../assets/token");
 
 const Performance = require("../../assets/tests/performance");
 
-async function findUser(username) {
+function findUser(username) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			const userQuery = await User.findOne({ username }, "+password");
@@ -24,7 +25,7 @@ async function findUser(username) {
 	return promise;
 }
 
-async function comparePasswords(text, hash) {
+function comparePasswords(text, hash) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			const same = await bcrypt.compare(text, hash);
@@ -37,7 +38,7 @@ async function comparePasswords(text, hash) {
 	return promise;
 }
 
-async function revokeLastLoginToken(id) {
+function revokeLastLoginToken(id) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			const data = await User.findOne({ _id: id });
@@ -61,7 +62,7 @@ async function revokeLastLoginToken(id) {
 	return promise;
 }
 
-async function updateUserLastLogin({ id, agent, ip, app, token }) {
+function updateUserLastLogin({ id, agent, ip, app, token }) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			await User.updateOne(
@@ -85,7 +86,7 @@ async function updateUserLastLogin({ id, agent, ip, app, token }) {
 	return promise;
 }
 
-async function verifyAndUpdateUserApps(user, app) {
+function verifyAndUpdateUserApps(user, app) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			if (!user.apps.includes(app)) {
@@ -107,7 +108,7 @@ async function verifyAndUpdateUserApps(user, app) {
 
 router.post("/", async (req, res) => {
 	const performanceLog = new Performance("/users/login");
-	const { username, password } = req.body;
+	let { username, password } = req.body;
 	const app = req.headers["x-from-app"] || "noapp";
 	const agent = req.headers["user-agent"];
 	const ip = req.ip;
@@ -125,6 +126,9 @@ router.post("/", async (req, res) => {
 			.status(400)
 			.json(response(true, textPack.authorize.invalidApp));
 	}
+
+	username = xssFilters.uriQueryInHTMLData(username);
+	password = xssFilters.uriQueryInHTMLData(password);
 
 	Promise.resolve([])
 		.then(async (all) => {

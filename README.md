@@ -1,19 +1,18 @@
-## GepetoServices
+# GepetoServices
 
 > Todos os serviços unificados feitos pelo Gepetojj
 
-#### Conceito
+## Conceito
 
 A ideia do GepetoServices é juntar em uma só API, sistemas que serão usado por várias aplicações.
 
-
-#### Tecnologias
+## Tecnologias
 
 * Express.js --> Backend  
   
 Mais informações sobre cada lib, clique [aqui](https://github.com/gepetojj/gepetoservices/blob/master/package.json).
 
-#### API's disponíveis
+## API's disponíveis
 
 * Translator
   * Tradução de textos para qualquer língua.
@@ -27,6 +26,6 @@ Mais informações sobre cada lib, clique [aqui](https://github.com/gepetojj/gep
 * Users
   * Crie seu usuário do GepetoServices.
 
-#### Documentação
+## Documentação
 
 Para mais informações de como funciona a API, acesse a [Wiki](https://github.com/gepetojj/gepetoservices/wiki).

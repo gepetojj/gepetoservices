@@ -9,7 +9,7 @@ const textPack = require("./textPack.json");
 moment().locale("pt-br");
 moment().tz("America/Maceio");
 
-function token() {
+function Token() {
 	function create(params, expiresIn = "1d") {
 		const tokenId = `${moment().valueOf()}:${shortid.generate()}`;
 
@@ -80,4 +80,4 @@ function token() {
 	return { create, verify, revoke };
 }
 
-module.exports = token;
+module.exports = Token;
