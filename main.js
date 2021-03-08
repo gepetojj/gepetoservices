@@ -1,4 +1,6 @@
 require("dotenv").config();
+import "core-js/stable";
+import "regenerator-runtime/runtime";
 import express from "express";
 import { connect, connection } from "mongoose";
 import { urlencoded, json } from "body-parser";
