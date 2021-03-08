@@ -1,12 +1,12 @@
 {
   "name": "gepetoservices",
-  "version": "2.2.3",
+  "version": "2.2.5",
   "description": "Todos os serviços unificados feitos pelo Gepetojj.",
   "main": "main.js",
   "author": "Gepetojj",
   "license": "MIT",
   "scripts": {
-    "start": "pm2-runtime start build/main.js -i max",
+    "start": "node build/main.js",
     "dev": "nodemon . --exec babel-node",
     "test": "mocha ./assets/tests/api.js --require @babel/register",
     "build": "rimraf build && yarn build:api && yarn build:assets && babel main.js -d build --copy-files",
