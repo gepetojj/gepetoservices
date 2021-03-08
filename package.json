@@ -6,7 +6,7 @@
   "author": "Gepetojj",
   "license": "MIT",
   "scripts": {
-    "start": "pm2 start build/main.js -i max",
+    "start": "pm2-runtime start build/main.js -i max",
     "dev": "nodemon . --exec babel-node",
     "test": "mocha ./assets/tests/api.js --require @babel/register",
     "build": "rimraf build && yarn build:api && yarn build:assets && babel main.js -d build --copy-files",
