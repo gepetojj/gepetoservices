@@ -1,7 +1,11 @@
-// const redis = require("redis");
-const { RateLimiterMemory } = require("rate-limiter-flexible");
-const response = require("../response");
-const textPack = require("../textPack.json");
+require("dotenv").config();
+import { RateLimiterMemory } from 'rate-limiter-flexible';
+import moment from 'moment-timezone';
+import response from '../response';
+import textPack from '../textPack.json';
+
+moment().locale("pt-br");
+moment().tz("America/Maceio");
 
 const points = 50;
 const minimizedPoints = 5;
@@ -10,21 +14,7 @@ const pointsConsumed = 200;
 const minimizedPointsConsumed = 10;
 const blockDuration = 30; // segundos
 
-/* const redisClient = redis.createClient({
-	enable_offline_queue: false,
-});
-
-redisClient.on("connect", () => {
-	console.log("Conectado ao redis.");
-});
-
-redisClient.on("error", (err) => {
-	console.error("Conexão interrompida com o redis.");
-	throw new Error(err);
-});
- */
 const normalLimiter = new RateLimiterMemory({
-	// storeClient: redisClient,
 	points,
 	duration,
 	inmemoryBlockOnConsumed: pointsConsumed,
@@ -32,7 +22,6 @@ const normalLimiter = new RateLimiterMemory({
 });
 
 const minimizedLimiter = new RateLimiterMemory({
-	// storeClient: redisClient,
 	points: minimizedPoints,
 	duration,
 	inmemoryBlockOnConsumed: minimizedPointsConsumed,
@@ -45,7 +34,9 @@ function getHeaders(limiter, type = "normal") {
 			"Retry-After": limiter.msBeforeNext / 1000,
 			"X-RateLimit-Limit": minimizedPoints,
 			"X-RateLimit-Remaining": limiter.remainingPoints,
-			"X-RateLimit-Reset": new Date(Date.now() + limiter.msBeforeNext),
+			"X-RateLimit-Reset": moment(moment() + limiter.msBeforeNext).format(
+				"DD/MM/YYYY hh:mm:ss [GMT-3]"
+			),
 		};
 		return headers;
 	} else {
@@ -53,7 +44,9 @@ function getHeaders(limiter, type = "normal") {
 			"Retry-After": limiter.msBeforeNext / 1000,
 			"X-RateLimit-Limit": points,
 			"X-RateLimit-Remaining": limiter.remainingPoints,
-			"X-RateLimit-Reset": new Date(Date.now() + limiter.msBeforeNext),
+			"X-RateLimit-Reset": moment(moment() + limiter.msBeforeNext).format(
+				"DD/MM/YYYY hh:mm:ss [GMT-3]"
+			),
 		};
 		return headers;
 	}
@@ -62,11 +55,11 @@ function getHeaders(limiter, type = "normal") {
 const rateLimiter = (req, res, next) => {
 	if (textPack.rateLimiter.endpoints.includes(req.path)) {
 		minimizedLimiter
-			.consume(req.ip)
+			.consume(req.headers["x-ip"])
 			.then((limiter) => {
 				const headers = getHeaders(limiter, "minimized");
 				res.set(headers);
-				next();
+				return next();
 			})
 			.catch((limiter) => {
 				const headers = getHeaders(limiter, "minimized");
@@ -82,11 +75,11 @@ const rateLimiter = (req, res, next) => {
 			});
 	} else {
 		normalLimiter
-			.consume(req.ip)
+			.consume(req.headers["x-ip"])
 			.then((limiter) => {
 				const headers = getHeaders(limiter);
 				res.set(headers);
-				next();
+				return next();
 			})
 			.catch((limiter) => {
 				const headers = getHeaders(limiter);
@@ -103,4 +96,4 @@ const rateLimiter = (req, res, next) => {
 	}
 };
 
-module.exports = rateLimiter;
+export default rateLimiter;

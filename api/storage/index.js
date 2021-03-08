@@ -1,12 +1,12 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-const access = require("./access");
-const deleteFile = require("./delete");
-const upload = require("./upload");
+import access from './access';
+import deleteFile from './delete';
+import upload from './upload';
 
 router.use("/access", access);
 router.use("/delete", deleteFile);
 router.use("/upload", upload);
 
-module.exports = router;
+export default router;

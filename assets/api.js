@@ -6,4 +6,4 @@ function API(endpoint) {
         : `https://gepetoservices.herokuapp.com/api${endpoint}`;
 }
 
-module.exports = API;
+export default API;

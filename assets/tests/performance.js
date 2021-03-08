@@ -1,4 +1,4 @@
-const moment = require("moment-timezone");
+import moment from 'moment-timezone';
 moment().locale("pt-br");
 moment().tz("America/Maceio");
 
@@ -47,4 +47,4 @@ class Performance {
 	}
 }
 
-module.exports = Performance;
+export default Performance;

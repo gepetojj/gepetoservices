@@ -1,11 +1,10 @@
-const mongoose = require("mongoose");
-const moment = require("moment-timezone");
+import { Schema, model } from 'mongoose';
+import moment from 'moment-timezone';
 
-const Schema = mongoose.Schema;
 moment().locale("pt-br");
 moment().tz("America/Maceio");
 
-const textPack = require("../textPack.json");
+import textPack from '../textPack.json';
 
 const User = new Schema({
 	username: {
@@ -29,6 +28,10 @@ const User = new Schema({
 		type: String,
 		default: textPack.users.register.avatarURL,
 	},
+	level: {
+		type: Number,
+		default: 0,
+	},
 	state: {
 		banned: {
 			type: Boolean,
@@ -38,7 +41,7 @@ const User = new Schema({
 			type: String,
 		},
 		banDate: {
-			type: Date,
+			type: Number,
 		},
 		emailConfirmed: {
 			type: Boolean,
@@ -52,7 +55,15 @@ const User = new Schema({
 	tfa: {
 		recoverCodes: [String],
 		secret: {
-			type: String,
+			hash: {
+				type: String,
+			},
+			key: {
+				type: Buffer,
+			},
+			iv: {
+				type: Buffer,
+			},
 		},
 	},
 	register: {
@@ -89,5 +100,5 @@ const User = new Schema({
 	apps: [String],
 });
 
-const UserModel = mongoose.model("User", User, "users");
-module.exports = UserModel;
+const UserModel = model("User", User, "users");
+export default UserModel;

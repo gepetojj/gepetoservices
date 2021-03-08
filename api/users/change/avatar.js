@@ -1,18 +1,16 @@
 require("dotenv").config();
-const express = require("express");
-const router = express.Router();
-const fs = require("fs");
-const Jimp = require("jimp");
-const shortid = require("shortid");
-const crypto = require("crypto");
-
-const authorize = require("../../../assets/middlewares/authorize");
-const response = require("../../../assets/response");
-const textPack = require("../../../assets/textPack.json");
-const User = require("../../../assets/models/User");
-const firebase = require("../../../assets/firebase");
-
-const Performance = require("../../../assets/tests/performance");
+import { Router } from 'express';
+const router = Router();
+import fs from 'fs';
+import Jimp from 'jimp';
+import shortid from 'shortid';
+import crypto from 'crypto';
+import authorize from '../../../assets/middlewares/authorize';
+import response from '../../../assets/response';
+import textPack from '../../../assets/textPack.json';
+import User from '../../../assets/models/User';
+import firebase from '../../../assets/firebase';
+import Performance from '../../../assets/tests/performance';
 
 const bucket = firebase.storage().bucket();
 
@@ -143,7 +141,7 @@ async function updateUserAvatar(uid) {
 	return promise;
 }
 
-router.put("/", authorize, async (req, res) => {
+router.put("/", authorize({ level: 0 }), async (req, res) => {
 	const performanceLog = new Performance(req.baseUrl);
 	const uid = req.user.id;
 
@@ -272,4 +270,4 @@ router.put("/", authorize, async (req, res) => {
 		});
 });
 
-module.exports = router;
+export default router;

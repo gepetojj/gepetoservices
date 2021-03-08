@@ -1,12 +1,12 @@
 require("dotenv").config();
-const express = require("express");
-const router = express.Router();
+import { Router } from "express";
+const router = Router();
 
-const response = require("../../assets/response");
-const textPack = require("../../assets/textPack.json");
-const authorize = require("../../assets/middlewares/authorize");
+import response from "../../assets/response";
+import textPack from "../../assets/textPack.json";
+import authorize from "../../assets/middlewares/authorize";
 
-router.get("/", authorize, (req, res) => {
+router.get("/", authorize({ level: 0 }), (req, res) => {
 	const app = req.headers["x-from-app"] || "noapp";
 
 	if (req.user) {
@@ -28,4 +28,4 @@ router.get("/", authorize, (req, res) => {
 	}
 });
 
-module.exports = router;
+export default router;

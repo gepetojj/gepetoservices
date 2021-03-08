@@ -1,5 +1,5 @@
 require("dotenv").config();
-const firebase = require("firebase-admin");
+import firebase from 'firebase-admin';
 
 const config = {
     type: "service_account",
@@ -20,4 +20,4 @@ firebase.initializeApp({
     storageBucket: "gepetoservices.appspot.com",
 });
 
-module.exports = firebase;
+export default firebase;

@@ -1,14 +1,14 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-const translator = require("./translator");
-const storage = require("./storage");
-const status = require("./status");
-const users = require("./users");
+import translator from './translator';
+import storage from './storage';
+import status from './status';
+import users from './users';
 
 router.use("/translator", translator);
 router.use("/storage", storage);
 router.use("/status", status);
 router.use("/users", users);
 
-module.exports = router;
+export default router;

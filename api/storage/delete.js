@@ -1,20 +1,18 @@
-const express = require("express");
-const router = express.Router();
-const xssFilters = require("xss-filters");
-
-const firebase = require("../../assets/firebase");
-const response = require("../../assets/response");
-const retryHandler = require("../../assets/retryHandler");
-const textPack = require("../../assets/textPack.json");
-
-const Performance = require("../../assets/tests/performance");
+import { Router } from 'express';
+const router = Router();
+import xssFilters from 'xss-filters';
+import firebase from '../../assets/firebase';
+import response from '../../assets/response';
+import retryHandler from '../../assets/retryHandler';
+import textPack from '../../assets/textPack.json';
+import Performance from '../../assets/tests/performance';
 
 const bucket = firebase.storage().bucket();
 const database = firebase.firestore().collection("storageLog");
 
 async function storageLog(req, filename) {
 	try {
-		const storageLog = await database.doc(req.ip).get();
+		const storageLog = await database.doc(req.headers["x-ip"]).get();
 		if (storageLog.exists) {
 			const data = storageLog.data();
 			const files = data.uploads.files;
@@ -45,7 +43,7 @@ async function deleteFile(req, filename) {
 	try {
 		await bucket.file(filename).delete();
 		try {
-			const storageLog = await database.doc(req.ip).get();
+			const storageLog = await database.doc(req.headers["x-ip"]).get();
 			if (storageLog.exists) {
 				const data = storageLog.data();
 				try {
@@ -56,7 +54,7 @@ async function deleteFile(req, filename) {
 							newLog.push(data);
 						}
 					});
-					await database.doc(req.ip).update({
+					await database.doc(req.headers["x-ip"]).update({
 						uploads: {
 							files: newLog,
 							quantity: data.uploads.quantity - 1,
@@ -149,4 +147,4 @@ router.delete("/", async (req, res) => {
 	}
 });
 
-module.exports = router;
+export default router;

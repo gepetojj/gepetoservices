@@ -1,10 +1,10 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-const avatar = require("./avatar");
-const password = require("./password");
+import avatar from './avatar';
+import password from './password';
 
 router.use("/avatar", avatar);
 router.use("/password", password);
 
-module.exports = router;
+export default router;

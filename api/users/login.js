@@ -1,25 +1,44 @@
 require("dotenv").config();
-const express = require("express");
-const router = express.Router();
-const moment = require("moment-timezone");
-const bcrypt = require("bcrypt");
-const xssFilters = require("xss-filters");
+import { Router } from "express";
+const router = Router();
+import moment from "moment-timezone";
+import bcrypt from "bcrypt";
+import xssFilters from "xss-filters";
+import response from "../../assets/response";
+import textPack from "../../assets/textPack.json";
+import User from "../../assets/models/User";
+import Token from "../../assets/token";
+import firebase from "../../assets/firebase";
+import Performance from "../../assets/tests/performance";
 
-const response = require("../../assets/response");
-const textPack = require("../../assets/textPack.json");
-const User = require("../../assets/models/User");
-const Token = require("../../assets/token");
-
-const Performance = require("../../assets/tests/performance");
+moment().locale("pt-br");
+moment().tz("America/Maceio");
+const userSessions = firebase.firestore().collection("sessions");
 
 function findUser(username) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			const userQuery = await User.findOne({ username }, "+password");
-			resolve(userQuery);
+			return resolve(userQuery);
 		} catch (err) {
 			console.error(err);
-			reject(err);
+			return reject(err);
+		}
+	});
+	return promise;
+}
+
+function verifyTfaState(uid) {
+	const promise = new Promise(async (resolve, reject) => {
+		try {
+			const userData = await User.findOne({ _id: uid });
+			if (userData.state.tfaActivated) {
+				return resolve(true);
+			} else {
+				return resolve(false)
+			}
+		} catch (err) {
+			return reject(err);
 		}
 	});
 	return promise;
@@ -29,10 +48,10 @@ function comparePasswords(text, hash) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			const same = await bcrypt.compare(text, hash);
-			resolve(same);
+			return resolve(same);
 		} catch (err) {
 			console.error(err);
-			reject(err);
+			return reject(err);
 		}
 	});
 	return promise;
@@ -49,24 +68,24 @@ function revokeLastLoginToken(id) {
 						await Token()
 							.revoke(decoded.tokenId)
 							.then(() => {
-								resolve();
+								return resolve();
 							})
 							.catch((err) => {
-								reject(err);
+								return reject(err);
 							});
 					})
 					.catch((err) => {
 						if (err.message === textPack.authorize.invalidToken) {
-							resolve();
+							return resolve();
 						}
-						reject(err);
+						return reject(err);
 					});
 			} else {
-				resolve();
+				return resolve();
 			}
 		} catch (err) {
 			console.error(err);
-			reject(err);
+			return reject(err);
 		}
 	});
 	return promise;
@@ -87,10 +106,10 @@ function updateUserLastLogin({ id, agent, ip, app, token }) {
 					},
 				}
 			);
-			resolve();
+			return resolve();
 		} catch (err) {
 			console.error(err);
-			reject(err);
+			return reject(err);
 		}
 	});
 	return promise;
@@ -104,24 +123,37 @@ function verifyAndUpdateUserApps(user, app) {
 					{ _id: user.id },
 					{ apps: [...user.apps, app] }
 				);
-				resolve();
+				return resolve();
 			} else {
-				resolve();
+				return resolve();
 			}
 		} catch (err) {
 			console.error(err);
-			reject(err);
+			return reject(err);
 		}
 	});
 	return promise;
 }
+
+/* function updateSessions(username) {
+	const promise = new Promise(async (resolve, reject) => {
+		await userSessions
+			.doc(username)
+			.get()
+			.then((doc) => {
+				if (doc.exists) {
+				}
+			});
+	});
+	return promise;
+} */
 
 router.post("/", async (req, res) => {
 	const performanceLog = new Performance(req.baseUrl);
 	let { username, password } = req.body;
 	const app = req.headers["x-from-app"] || "noapp";
 	const agent = req.headers["user-agent"];
-	const ip = req.ip;
+	const ip = req.headers["x-ip"];
 
 	if (!username || !password) {
 		performanceLog.finish();
@@ -130,7 +162,7 @@ router.post("/", async (req, res) => {
 			.json(response(true, textPack.standards.nullFields));
 	}
 
-	if (!["noapp", "lastpwd", "ppt"].includes(app)) {
+	if (!textPack.authorize.apps.includes(app)) {
 		performanceLog.finish();
 		return res
 			.status(400)
@@ -138,7 +170,6 @@ router.post("/", async (req, res) => {
 	}
 
 	username = xssFilters.uriQueryInHTMLData(username);
-	password = xssFilters.uriQueryInHTMLData(password);
 
 	Promise.resolve([])
 		.then(async (all) => {
@@ -182,16 +213,27 @@ router.post("/", async (req, res) => {
 		.then(async (all) => {
 			return await revokeLastLoginToken(all[0]._id)
 				.then(() => {
-					const token = Token().create({
-						id: all[0]._id,
-						app,
-					});
-					if (token.error) {
+					const accessToken = Token().create(
+						{
+							id: all[0]._id,
+							app,
+						},
+						"access"
+					);
+					const refreshToken = Token().create(
+						{
+							id: all[0]._id,
+							app,
+						},
+						"refresh"
+					);
+					if (accessToken.error || refreshToken.error) {
 						throw new Error(
 							`500:${textPack.standards.responseError}`
 						);
 					}
-					all.push(token.token);
+					all.push(accessToken.token);
+					all.push(refreshToken.token);
 					return all;
 				})
 				.catch(() => {
@@ -204,7 +246,7 @@ router.post("/", async (req, res) => {
 				agent,
 				ip,
 				app,
-				token: all[1],
+				token: all[2],
 			})
 				.then(() => {
 					return all;
@@ -218,10 +260,16 @@ router.post("/", async (req, res) => {
 		.then(async (all) => {
 			return await verifyAndUpdateUserApps(all[0], app)
 				.then(() => {
+					res.cookie("refreshToken", all[2], {
+						expires: moment().add(1, "day").toDate(),
+						secure: process.env.NODE_ENV === "production",
+						httpOnly: true,
+						sameSite: "lax",
+					});
 					performanceLog.finish();
 					return res.json(
 						response(false, textPack.users.login.logged, {
-							token: all[1],
+							accessToken: all[1],
 						})
 					);
 				})
@@ -238,4 +286,4 @@ router.post("/", async (req, res) => {
 		});
 });
 
-module.exports = router;
+export default router;

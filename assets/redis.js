@@ -1,9 +1,9 @@
 require("dotenv").config();
-const redis = require("redis");
+import { createClient } from 'redis';
 
 const redisServer = process.env.REDIS_SERVER;
 
-const redisClient = redis.createClient({
+const redisClient = createClient({
 	url: redisServer,
 	enable_offline_queue: false,
 });
@@ -17,4 +17,4 @@ redisClient.on("error", (err) => {
 	throw new Error(err);
 });
 
-module.exports = redisClient;
+export default redisClient;

@@ -1,9 +1,9 @@
-const RequestIp = require("@supercharge/request-ip");
+import { getClientIp } from "@supercharge/request-ip";
 
 const getIp = (req, res, next) => {
-    const userIp = RequestIp.getClientIp(req);
-    req.ip = userIp;
-    next();
+	const userIp = getClientIp(req);
+	req.headers["x-ip"] = userIp;
+	next()
 };
 
-module.exports = getIp;
+export default getIp;

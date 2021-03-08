@@ -1,10 +1,9 @@
-const express = require("express");
-const router = express.Router();
-const translate = require("@k3rn31p4nic/google-translate-api");
-const xssFilters = require("xss-filters");
-
-const response = require("../../assets/response");
-const textPack = require("../../assets/textPack.json");
+import { Router } from 'express';
+const router = Router();
+import translate from '@k3rn31p4nic/google-translate-api';
+import xssFilters from 'xss-filters';
+import response from '../../assets/response';
+import textPack from '../../assets/textPack.json';
 
 router.get("/", (req, res) => {
 	let { text, from, to } = req.query;
@@ -39,4 +38,4 @@ router.get("/", (req, res) => {
 		});
 });
 
-module.exports = router;
+export default router;

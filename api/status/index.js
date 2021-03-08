@@ -1,11 +1,10 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-const response = require("../../assets/response");
-const status = require("../../assets/status");
-const textPack = require("../../assets/textPack.json");
-
-const Performance = require("../../assets/tests/performance");
+import response from '../../assets/response';
+import status from '../../assets/status';
+import textPack from '../../assets/textPack.json';
+import Performance from '../../assets/tests/performance';
 
 router.get("/", async (req, res) => {
 	const performanceLog = new Performance(req.baseUrl);
@@ -103,4 +102,4 @@ router.get("/", async (req, res) => {
 	}
 });
 
-module.exports = router;
+export default router;

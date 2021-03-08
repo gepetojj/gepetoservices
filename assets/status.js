@@ -1,14 +1,19 @@
-const axios = require("axios");
-const moment = require("moment-timezone");
-const Form = require("form-data");
-const fs = require("fs");
-
-const API = require("./api");
+import axios from 'axios';
+import moment from 'moment-timezone';
+import Form from 'form-data';
+import { createReadStream } from 'fs';
+import API from './api';
 
 moment().locale("pt-br");
 moment().tz("America/Maceio");
 
 function status(endpoint = undefined) {
+	/**
+	 * Classifica uma API e retorna seu status.
+	 * @param {Number} statusCode Código da resposta da API.
+	 * @param {String} timeToRespond Tempo de resposta da API em milisegundos.
+	 * @returns {String} Retorna o status da API.
+	 */
 	function classify(statusCode, timeToRespond) {
 		if (statusCode > 199 && statusCode < 300) {
 			if (timeToRespond < 1700) {
@@ -77,7 +82,7 @@ function status(endpoint = undefined) {
 		const formData = new Form();
 		formData.append(
 			name,
-			fs.createReadStream(`${process.cwd()}/assets/tests/testImage.png`)
+			createReadStream(`${process.cwd()}/assets/tests/testImage.png`)
 		);
 
 		const testStart = moment().valueOf();
@@ -169,4 +174,4 @@ function status(endpoint = undefined) {
 	};
 }
 
-module.exports = status;
+export default status;

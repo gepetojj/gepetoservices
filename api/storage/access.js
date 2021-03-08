@@ -1,13 +1,11 @@
-const express = require("express");
-const router = express.Router();
-const xssFilters = require("xss-filters");
-
-const firebase = require("../../assets/firebase");
-const response = require("../../assets/response");
-const retryHandler = require("../../assets/retryHandler");
-const textPack = require("../../assets/textPack.json");
-
-const Performance = require("../../assets/tests/performance");
+import { Router } from 'express';
+const router = Router();
+import xssFilters from 'xss-filters';
+import firebase from '../../assets/firebase';
+import response from '../../assets/response';
+import retryHandler from '../../assets/retryHandler';
+import textPack from '../../assets/textPack.json';
+import Performance from '../../assets/tests/performance';
 
 const bucket = firebase.storage().bucket();
 
@@ -59,4 +57,4 @@ router.get("/", async (req, res) => {
 	);
 });
 
-module.exports = router;
+export default router;

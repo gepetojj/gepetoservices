@@ -1,14 +1,12 @@
 require("dotenv").config();
-const express = require("express");
-const router = express.Router();
-const xssFilters = require("xss-filters");
-
-const response = require("../../assets/response");
-const textPack = require("../../assets/textPack.json");
-const User = require("../../assets/models/User");
-const Token = require("../../assets/token");
-
-const Performance = require("../../assets/tests/performance");
+import { Router } from 'express';
+const router = Router();
+import xssFilters from 'xss-filters';
+import response from '../../assets/response';
+import textPack from '../../assets/textPack.json';
+import User from '../../assets/models/User';
+import Token from '../../assets/token';
+import Performance from '../../assets/tests/performance';
 
 function getCurrentUserState(id) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -30,7 +28,7 @@ function getCurrentUserState(id) {
 function changeUserState(id, newState) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
-			await User.updateOne({ _id: id }, { state: { ...newState } });
+			await User.updateOne({ _id: id }, { state: newState });
 			resolve();
 		} catch (err) {
 			console.error(err);
@@ -70,7 +68,7 @@ router.get("/", async (req, res) => {
 	Promise.resolve([])
 		.then(async (all) => {
 			return await Token()
-				.verify(t)
+				.verify(t, "refresh")
 				.then((decoded) => {
 					all.push(decoded);
 					return all;
@@ -100,7 +98,7 @@ router.get("/", async (req, res) => {
 								);
 							}
 
-							await changeUserState(all[0].id, {
+							return await changeUserState(all[0].id, {
 								emailConfirmed: all[0].newState,
 								banned: state.banned,
 								reason: state.reason,
@@ -122,7 +120,7 @@ router.get("/", async (req, res) => {
 									);
 								});
 						case "changePassword":
-							await changeUserData(all[0].id, {
+							return await changeUserData(all[0].id, {
 								password: all[0].newState,
 							})
 								.then(() => {
@@ -153,4 +151,4 @@ router.get("/", async (req, res) => {
 		});
 });
 
-module.exports = router;
+export default router;

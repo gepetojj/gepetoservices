@@ -1,18 +1,21 @@
-const express = require("express");
-const router = express.Router();
+import { Router } from 'express';
+const router = Router();
 
-const register = require("./register");
-const confirm = require("./confirm");
-const login = require("./login");
-const verify = require("./verify");
-
-const change = require("./change");
+import register from './register';
+import confirm from './confirm';
+import login from './login';
+import verify from './verify';
+import refresh from './refresh';
+import change from './change';
+import tfa from './tfa';
 
 router.use("/register", register);
 router.use("/confirm", confirm);
 router.use("/login", login);
 router.use("/verify", verify);
+router.use("/refresh", refresh);
 
 router.use("/change", change);
+router.use("/tfa", tfa);
 
-module.exports = router;
+export default router;

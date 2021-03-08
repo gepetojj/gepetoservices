@@ -22,4 +22,4 @@ const retryHandler = async (func, times) => {
     return retryData;
 };
 
-module.exports = retryHandler;
+export default retryHandler;

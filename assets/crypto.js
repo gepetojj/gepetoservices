@@ -1,35 +1,61 @@
-const crypto = require("crypto");
+import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
 
 function Crypto(algorithm = "aes-256-ctr") {
+	/**
+	 * Criptografa uma string.
+	 * @param {String} string Texto a ser criptografado.
+	 * @returns {Object} Retorna um objeto com a key 'error'. Caso error
+	 * seja 'false', os dados da criptografia virão juntos. Caso error seja
+	 * 'true', apenas essa key existirá.
+	 */
 	function enc(string) {
-		const key = crypto.randomBytes(32);
-		const iv = crypto.randomBytes(16);
+		try {
+			const key = randomBytes(32);
+			const iv = randomBytes(16);
 
-		const cipher = crypto.createCipheriv(algorithm, key, iv);
-		const encrypted = Buffer.concat([
-			cipher.update(string),
-			cipher.final(),
-		]);
+			const cipher = createCipheriv(algorithm, key, iv);
+			const encrypted = Buffer.concat([
+				cipher.update(string),
+				cipher.final(),
+			]);
 
-		return { hash: encrypted.toString("hex"), key, iv };
+			return { error: false, hash: encrypted.toString("hex"), key, iv };
+		} catch (err) {
+			console.error(err);
+			return { error: true };
+		}
 	}
 
+	/**
+	 * Descriptografa um hash.
+	 * @param {String} hash Hash a ser descriptografado.
+	 * @param {Buffer} key Chave de criptografia do hash.
+	 * @param {Buffer} iv IV do hash.
+	 * @returns {Object} Retorna um objeto com a key 'error'. Caso error
+	 * seja 'false', virá a 'string' com os dados descriptografados.
+	 * Caso error seja 'true', apenas essa key existirá.
+	 */
 	function dec({ hash, key, iv }) {
-		const decipher = crypto.createDecipheriv(
-			algorithm,
-			key,
-			Buffer.from(iv, "hex")
-		);
+		try {
+			const decipher = createDecipheriv(
+				algorithm,
+				key,
+				Buffer.from(iv, "hex")
+			);
 
-		const decrypted = Buffer.concat([
-			decipher.update(Buffer.from(hash, "hex")),
-			decipher.final(),
-		]);
+			const decrypted = Buffer.concat([
+				decipher.update(Buffer.from(hash, "hex")),
+				decipher.final(),
+			]);
 
-		return decrypted.toString();
+			return { error: false, result: decrypted.toString() };
+		} catch (err) {
+			console.error(err);
+			return { error: true };
+		}
 	}
 
 	return { enc, dec };
 }
 
-module.exports = Crypto;
+export default Crypto;

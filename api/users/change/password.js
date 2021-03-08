@@ -1,20 +1,16 @@
-require("dotenv").config();
-const express = require("express");
-const router = express.Router();
-const xssFilters = require("xss-filters");
-const bcrypt = require("bcrypt");
-const nodemailer = require("nodemailer");
-const ejs = require("ejs");
-
-const authorize = require("../../../assets/middlewares/authorize");
-const response = require("../../../assets/response");
-const validator = require("../../../assets/validator");
-const textPack = require("../../../assets/textPack.json");
-const User = require("../../../assets/models/User");
-const API = require("../../../assets/api");
-const Token = require("../../../assets/token");
-
-const Performance = require("../../../assets/tests/performance");
+import { Router } from 'express';
+const router = Router();
+import xssFilters from 'xss-filters';
+import bcrypt from 'bcrypt';
+import authorize from '../../../assets/middlewares/authorize';
+import response from '../../../assets/response';
+import validator from '../../../assets/validator';
+import textPack from '../../../assets/textPack.json';
+import User from '../../../assets/models/User';
+import API from '../../../assets/api';
+import Token from '../../../assets/token';
+import mailer from '../../../assets/mailer';
+import Performance from '../../../assets/tests/performance';
 
 function verifyPassword(uid, password) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -51,11 +47,14 @@ function encryptPassword(password) {
 }
 
 function generateConfirmLink(uid, password) {
-	const token = Token().create({
-		id: uid,
-		scope: "changePassword",
-		newState: password,
-	});
+	const token = Token().create(
+		{
+			id: uid,
+			scope: "changePassword",
+			newState: password,
+		},
+		"refresh"
+	);
 	if (token.error) {
 		return { error: true };
 	}
@@ -63,54 +62,7 @@ function generateConfirmLink(uid, password) {
 	return { error: false, link };
 }
 
-function sendMailConfirmation(username, link, target) {
-	const promise = new Promise(async (resolve, reject) => {
-		try {
-			const transporter = nodemailer.createTransport({
-				host: "smtp.gmail.com",
-				port: 465,
-				secure: true,
-				auth: {
-					user: process.env.MAIL_USER,
-					pass: process.env.MAIL_PASS,
-				},
-			});
-
-			let renderedHtml;
-
-			ejs.renderFile(
-				`${process.cwd()}/assets/templates/changePassword.ejs`,
-				{ username, link },
-				(err, html) => {
-					if (err) {
-						console.error(err);
-						reject(err);
-					}
-
-					renderedHtml = html;
-				}
-			);
-
-			const { err } = await transporter.sendMail({
-				from: `GepetoServices <${process.env.MAIL_USER}>`,
-				to: target,
-				subject: "Mudança de senha da conta do GepetoServices",
-				html: renderedHtml,
-			});
-			if (err) {
-				console.error(err);
-				reject(err);
-			}
-			resolve();
-		} catch (err) {
-			console.error(err);
-			reject(err);
-		}
-	});
-	return promise;
-}
-
-router.put("/", authorize, (req, res) => {
+router.put("/", authorize({ level: 0 }), (req, res) => {
 	const performanceLog = new Performance(req.baseUrl);
 	let { password, newPassword, newPasswordConfirm } = req.body;
 
@@ -147,11 +99,10 @@ router.put("/", authorize, (req, res) => {
 				.then((same) => {
 					if (same) {
 						return all;
-					} else {
-						throw new Error(
-							`401:${textPack.users.login.wrongPassword}`
-						);
 					}
+					throw new Error(
+						`401:${textPack.users.login.wrongPassword}`
+					);
 				})
 				.catch(() => {
 					throw new Error(
@@ -167,7 +118,7 @@ router.put("/", authorize, (req, res) => {
 				})
 				.catch(() => {
 					throw new Error(
-						`500:${textPack.standards.responseCriticError}`
+						`500:${textPack.users.change.password.couldntChangePassword}`
 					);
 				});
 		})
@@ -176,24 +127,31 @@ router.put("/", authorize, (req, res) => {
 			if (!link.error) {
 				all.push(link.link);
 				return all;
-			} else {
-				throw new Error(`500:${textPack.standards.responseError}`);
 			}
+			throw new Error(
+				`500:${textPack.users.change.password.couldntChangePassword}`
+			);
 		})
 		.then(async (all) => {
-			return await sendMailConfirmation(
-				req.user.username,
-				all[1],
-				req.user.email
-			)
+			return await mailer({
+				template: "changePassword",
+				templateParams: { username: req.user.username, link: all[1] },
+				target: req.user.email,
+				subject: "Mudança de senha da conta do GepetoServices",
+			})
 				.then(() => {
 					performanceLog.finish();
 					return res.json(
-						response(false, "Confirme esse pedido no seu email.")
+						response(
+							false,
+							textPack.users.change.password.confirmAction
+						)
 					);
 				})
 				.catch(() => {
-					throw new Error(`500:${textPack.standards.responseError}`);
+					throw new Error(
+						`500:${textPack.users.change.password.couldntSendEmail}`
+					);
 				});
 		})
 		.catch((err) => {
@@ -203,4 +161,4 @@ router.put("/", authorize, (req, res) => {
 		});
 });
 
-module.exports = router;
+export default router;
