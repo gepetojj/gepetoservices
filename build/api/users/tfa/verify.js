@@ -1,13 +1,11 @@
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
 
-var _express = _interopRequireWildcard(require("express"));
+var _express = require("express");
 
 var _node2fa = require("node-2fa");
 
@@ -22,10 +20,6 @@ var _User = _interopRequireDefault(require("../../../assets/models/User"));
 var _crypto = _interopRequireDefault(require("../../../assets/crypto"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function _getRequireWildcardCache() { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || _typeof(obj) !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
 
@@ -57,7 +51,7 @@ function verifyTfaState(uid) {
                 break;
               }
 
-              return _context.abrupt("return", reject("Sua verificação de dois fatores não está ativa."));
+              return _context.abrupt("return", reject(_textPack["default"].users.tfa.notEnabled));
 
             case 6:
               return _context.abrupt("return", resolve(user.tfa.secret));
@@ -133,10 +127,10 @@ router.get("/", (0, _authorize["default"])({
     var verified = (0, _node2fa.verifyToken)(all[1], code);
 
     if (verified && verified.delta === 0) {
-      return res.json((0, _response["default"])(false, "Verificado com sucesso."));
+      return res.json((0, _response["default"])(false, _textPack["default"].users.tfa.verified));
     }
 
-    return res.status(401).json((0, _response["default"])(true, "Código inválido."));
+    return res.status(401).json((0, _response["default"])(true, _textPack["default"].users.tfa.notVerified));
   })["catch"](function (err) {
     console.log(err);
     var error = err.message.split(":");

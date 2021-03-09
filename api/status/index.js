@@ -1,10 +1,10 @@
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
 
-import response from '../../assets/response';
-import status from '../../assets/status';
-import textPack from '../../assets/textPack.json';
-import Performance from '../../assets/tests/performance';
+import response from "../../assets/response";
+import status from "../../assets/status";
+import textPack from "../../assets/textPack.json";
+import Performance from "../../assets/tests/performance";
 
 router.get("/", async (req, res) => {
 	const performanceLog = new Performance(req.baseUrl);

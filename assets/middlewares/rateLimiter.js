@@ -67,7 +67,7 @@ const rateLimiter = (req, res, next) => {
 
 				return res.status(429).json(
 					response(true, textPack.rateLimiter.responseError, {
-						limit: `${points - 45} requests em ${Math.floor(
+						limit: `${minimizedPoints} requests em ${Math.floor(
 							duration / 60
 						)} minutos.`,
 					})

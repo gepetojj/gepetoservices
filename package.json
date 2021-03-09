@@ -1,6 +1,6 @@
 {
   "name": "gepetoservices",
-  "version": "2.2.5",
+  "version": "2.2.6",
   "description": "Todos os serviços unificados feitos pelo Gepetojj.",
   "main": "main.js",
   "author": "Gepetojj",
@@ -48,6 +48,7 @@
     "redis": "^3.0.2",
     "regenerator-runtime": "^0.13.7",
     "shortid": "^2.2.16",
+    "swagger-ui-express": "^4.1.6",
     "uuid": "^8.3.2",
     "validator": "^13.5.2",
     "xss-filters": "^1.2.7"

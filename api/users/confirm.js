@@ -1,25 +1,25 @@
 require("dotenv").config();
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
-import xssFilters from 'xss-filters';
-import response from '../../assets/response';
-import textPack from '../../assets/textPack.json';
-import User from '../../assets/models/User';
-import Token from '../../assets/token';
-import Performance from '../../assets/tests/performance';
+import xssFilters from "xss-filters";
+import response from "../../assets/response";
+import textPack from "../../assets/textPack.json";
+import User from "../../assets/models/User";
+import Token from "../../assets/token";
+import Performance from "../../assets/tests/performance";
 
 function getCurrentUserState(id) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			const userState = await User.findOne({ _id: id });
 			if (userState) {
-				resolve(userState.state);
+				return resolve(userState.state);
 			} else {
-				reject("Usuário inexistente.");
+				return reject("Usuário inexistente.");
 			}
 		} catch (err) {
 			console.error(err);
-			reject(err.message);
+			return reject(err.message);
 		}
 	});
 	return promise;
@@ -29,10 +29,10 @@ function changeUserState(id, newState) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			await User.updateOne({ _id: id }, { state: newState });
-			resolve();
+			return resolve();
 		} catch (err) {
 			console.error(err);
-			reject(err.message);
+			return reject(err.message);
 		}
 	});
 	return promise;
@@ -42,10 +42,10 @@ function changeUserData(id, newData) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			await User.updateOne({ _id: id }, newData);
-			resolve();
+			return resolve();
 		} catch (err) {
 			console.error(err);
-			reject(err.message);
+			return reject(err.message);
 		}
 	});
 	return promise;
@@ -135,7 +135,7 @@ router.get("/", async (req, res) => {
 								})
 								.catch(() => {
 									throw new Error(
-										`500:Não foi possível confirmar sua ação.`
+										`500:${textPack.users.confirmEmail.couldNotConfirmEmail}`
 									);
 								});
 					}

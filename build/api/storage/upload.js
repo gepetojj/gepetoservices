@@ -61,16 +61,16 @@ function verifyUserLimits(ip) {
                   var data = doc.data();
 
                   if (data.uploads.quantity >= 7) {
-                    reject(_textPack["default"].storage.upload.limitReached);
+                    return reject(_textPack["default"].storage.upload.limitReached);
                   } else {
-                    resolve();
+                    return resolve();
                   }
                 } else {
-                  resolve();
+                  return resolve();
                 }
               })["catch"](function (err) {
                 console.error(err);
-                reject(_textPack["default"].storage.upload.limitError);
+                return reject(_textPack["default"].storage.upload.limitError);
               });
 
             case 2:
@@ -116,10 +116,10 @@ function logUserAction(ip, filename) {
                               files: [].concat(_toConsumableArray(data.uploads.files), [filename])
                             }
                           }).then(function () {
-                            resolve();
+                            return resolve();
                           })["catch"](function (err) {
                             console.error(err);
-                            reject(_textPack["default"].standards.responseError);
+                            return reject(_textPack["default"].standards.responseError);
                           });
 
                         case 4:
@@ -135,10 +135,10 @@ function logUserAction(ip, filename) {
                               files: [filename]
                             }
                           }).then(function () {
-                            resolve();
+                            return resolve();
                           })["catch"](function (err) {
                             console.error(err);
-                            reject(_textPack["default"].standards.responseError);
+                            return reject(_textPack["default"].standards.responseError);
                           });
 
                         case 8:
@@ -180,10 +180,10 @@ function deleteCloudFile(filename) {
               file = bucket.file(filename);
               _context4.next = 3;
               return file["delete"]().then(function () {
-                resolve(_textPack["default"].storage.upload.uploadCanceled);
+                return resolve(_textPack["default"].storage.upload.uploadCanceled);
               })["catch"](function (err) {
                 console.error(err);
-                reject(_textPack["default"].storage.upload.uploadCanceledError);
+                return reject(_textPack["default"].storage.upload.uploadCanceledError);
               });
 
             case 3:
@@ -223,10 +223,10 @@ function moveFile(file, filename) {
     file.mv(path, function (err) {
       if (err) {
         console.error(err);
-        reject(_textPack["default"].standards.responseError);
+        return reject(_textPack["default"].standards.responseError);
       }
 
-      resolve(path);
+      return resolve(path);
     });
   });
   return promise;
@@ -244,10 +244,10 @@ function uploadFile(path, checksum) {
                 gzip: true,
                 validation: checksum
               }).then(function () {
-                resolve();
+                return resolve();
               })["catch"](function (err) {
                 console.error(err);
-                reject(_textPack["default"].standards.responseError);
+                return reject(_textPack["default"].standards.responseError);
               });
 
             case 2:

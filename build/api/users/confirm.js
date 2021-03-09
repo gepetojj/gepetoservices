@@ -46,27 +46,32 @@ function getCurrentUserState(id) {
             case 3:
               userState = _context.sent;
 
-              if (userState) {
-                resolve(userState.state);
-              } else {
-                reject("Usuário inexistente.");
+              if (!userState) {
+                _context.next = 8;
+                break;
               }
 
-              _context.next = 11;
+              return _context.abrupt("return", resolve(userState.state));
+
+            case 8:
+              return _context.abrupt("return", reject("Usuário inexistente."));
+
+            case 9:
+              _context.next = 15;
               break;
 
-            case 7:
-              _context.prev = 7;
+            case 11:
+              _context.prev = 11;
               _context.t0 = _context["catch"](0);
               console.error(_context.t0);
-              reject(_context.t0.message);
+              return _context.abrupt("return", reject(_context.t0.message));
 
-            case 11:
+            case 15:
             case "end":
               return _context.stop();
           }
         }
-      }, _callee, null, [[0, 7]]);
+      }, _callee, null, [[0, 11]]);
     }));
 
     return function (_x, _x2) {
@@ -92,15 +97,13 @@ function changeUserState(id, newState) {
               });
 
             case 3:
-              resolve();
-              _context2.next = 10;
-              break;
+              return _context2.abrupt("return", resolve());
 
             case 6:
               _context2.prev = 6;
               _context2.t0 = _context2["catch"](0);
               console.error(_context2.t0);
-              reject(_context2.t0.message);
+              return _context2.abrupt("return", reject(_context2.t0.message));
 
             case 10:
             case "end":
@@ -131,15 +134,13 @@ function changeUserData(id, newData) {
               }, newData);
 
             case 3:
-              resolve();
-              _context3.next = 10;
-              break;
+              return _context3.abrupt("return", resolve());
 
             case 6:
               _context3.prev = 6;
               _context3.t0 = _context3["catch"](0);
               console.error(_context3.t0);
-              reject(_context3.t0.message);
+              return _context3.abrupt("return", reject(_context3.t0.message));
 
             case 10:
             case "end":
@@ -282,7 +283,7 @@ router.get("/", /*#__PURE__*/function () {
                                       performanceLog.finish();
                                       return res.json((0, _response["default"])(false, _textPack["default"].users.confirmEmail.emailConfirmed));
                                     })["catch"](function () {
-                                      throw new Error("500:N\xE3o foi poss\xEDvel confirmar sua a\xE7\xE3o.");
+                                      throw new Error("500:".concat(_textPack["default"].users.confirmEmail.couldNotConfirmEmail));
                                     });
 
                                   case 10:

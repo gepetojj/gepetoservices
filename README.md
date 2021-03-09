@@ -28,4 +28,5 @@ Mais informações sobre cada lib, clique [aqui](https://github.com/gepetojj/gep
 
 ## Documentação
 
-Para mais informações de como funciona a API, acesse a [Wiki](https://github.com/gepetojj/gepetoservices/wiki).
+Para mais informações de como funciona a API, acesse a [documentação](https://gepetoservices.herokuapp.com/api/docs)  
+ou a [Wiki](https://github.com/gepetojj/gepetoservices/wiki).

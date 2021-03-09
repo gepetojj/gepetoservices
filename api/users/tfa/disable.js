@@ -12,9 +12,7 @@ function verifyTfaState(uid) {
 		try {
 			const user = await User.findOne({ _id: uid });
 			if (!user.state.tfaActivated) {
-				return reject(
-					"Sua verificação de dois fatores não está ativa."
-				);
+				return reject(textPack.users.tfa.notEnabled);
 			}
 			return resolve(user);
 		} catch (err) {
@@ -81,7 +79,7 @@ router.get("/", authorize({ level: 0 }), (req, res) => {
 				all.push(recoverCodes);
 				return all;
 			}
-			throw new Error(`500:Seus dados não foram encontrados.`);
+			throw new Error(`500:${textPack.users.tfa.dataNotFound}`);
 		})
 		.then((all) => {
 			// Comparar o recover code passado com os coletados do banco de dados.
@@ -94,14 +92,14 @@ router.get("/", authorize({ level: 0 }), (req, res) => {
 			if (canReturn) {
 				return all;
 			}
-			throw new Error(`400:Código de recuperação invalido.`);
+			throw new Error(`400:${textPack.users.tfa.invalidRecoverCode}`);
 		})
 		.then(async (all) => {
 			// Mudar estado do 2fa e apagar dados.
 			return await deleteTfaData(req.user.id, all[0].state)
 				.then(() => {
 					return res.json(
-						response(false, "2FA desativado com sucesso.")
+						response(false, textPack.users.tfa.disabled)
 					);
 				})
 				.catch((err) => {

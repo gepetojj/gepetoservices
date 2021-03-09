@@ -21,13 +21,13 @@ async function verifyUsernameAndEmail(username, email) {
 				usernameVerification.length === 0 &&
 				emailVerification.length === 0
 			) {
-				resolve();
+				return resolve();
 			} else {
-				reject(textPack.users.register.userOrEmailAlreadyRegistered);
+				return reject(textPack.users.register.userOrEmailAlreadyRegistered);
 			}
 		} catch (err) {
 			console.error(err);
-			reject(err);
+			return reject(err);
 		}
 	});
 	return promise;
@@ -52,10 +52,10 @@ async function deleteUser(id) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			await User.deleteOne({ _id: id });
-			resolve();
+			return resolve();
 		} catch (err) {
 			console.error(err);
-			reject(err);
+			return reject(err);
 		}
 	});
 	return promise;

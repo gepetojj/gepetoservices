@@ -55,7 +55,7 @@ function verifyTfaState(uid) {
                 break;
               }
 
-              return _context.abrupt("return", reject("Sua verificação de dois fatores já está ativa."));
+              return _context.abrupt("return", reject(_textPack["default"].users.tfa.alreadyEnabled));
 
             case 6:
               _context.next = 8;
@@ -180,7 +180,7 @@ function updateTfa(uid, recoverCodes, secret) {
               _context3.prev = 6;
               _context3.t0 = _context3["catch"](0);
               console.error(_context3.t0);
-              return _context3.abrupt("return", reject("Não foi possível ativar sua verificação de duas etapas. Tente novamente."));
+              return _context3.abrupt("return", reject(_textPack["default"].users.tfa.couldntEnable));
 
             case 10:
             case "end":
@@ -288,7 +288,7 @@ router.get("/", (0, _authorize["default"])({
             case 0:
               _context6.next = 2;
               return updateTfa(req.user.id, all[3], all[4]).then(function () {
-                return res.json((0, _response["default"])(false, "Verificação de dois fatores ativada.", {
+                return res.json((0, _response["default"])(false, _textPack["default"].users.tfa.enabled, {
                   recoverCodes: all[0],
                   qrcode: all[2],
                   tfaCode: all[1]

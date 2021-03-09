@@ -1,6 +1,6 @@
 {
 	"main": {
-		"redirectURL": "https://github.com/gepetojj/gepetoservices/wiki",
+		"redirectURL": "/api/docs",
 		"notFound": "Esse endpoint não existe. Verifique o método ou a escrita e tente novamente.",
 		"serverStart": "Servidor online."
 	},
@@ -86,6 +86,17 @@
 				"couldntChangePassword": "Não foi possível alterar sua senha.",
 				"couldntSendEmail": "Não foi possível enviar seu email de confirmação."
 			}
+		},
+		"tfa": {
+			"dataNotFound": "Seus dados não foram encontrados.",
+			"invalidRecoverCode": "Código de recuperação invalido.",
+			"disabled": "2FA desativado com sucesso.",
+			"alreadyEnabled": "Sua verificação de dois fatores já está ativa.",
+			"notEnabled": "Sua verificação de dois fatores não está ativa.",
+			"couldntEnable": "Não foi possível ativar sua verificação de duas etapas. Tente novamente.",
+			"enabled": "Verificação de dois fatores ativada.",
+			"verified": "Verificado com sucesso.",
+			"notVerified": "Código inválido."
 		},
 		"verify": {
 			"authenticated": "Autenticado com sucesso.",

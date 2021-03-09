@@ -1,21 +1,21 @@
 require("dotenv").config();
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
-import { generateSecret } from 'node-2fa';
-import { generate } from 'shortid';
-import bcrypt from 'bcrypt';
-import response from '../../../assets/response';
-import textPack from '../../../assets/textPack.json';
-import authorize from '../../../assets/middlewares/authorize';
-import User from '../../../assets/models/User';
-import encryption from '../../../assets/crypto';
+import { generateSecret } from "node-2fa";
+import { generate } from "shortid";
+import bcrypt from "bcrypt";
+import response from "../../../assets/response";
+import textPack from "../../../assets/textPack.json";
+import authorize from "../../../assets/middlewares/authorize";
+import User from "../../../assets/models/User";
+import encryption from "../../../assets/crypto";
 
 function verifyTfaState(uid) {
 	const promise = new Promise(async (resolve, reject) => {
 		try {
 			const user = await User.findOne({ _id: uid });
 			if (user.state.tfaActivated) {
-				return reject("Sua verificação de dois fatores já está ativa.");
+				return reject(textPack.users.tfa.alreadyEnabled);
 			}
 			await User.updateOne(
 				{ _id: uid },
@@ -79,9 +79,7 @@ function updateTfa(uid, recoverCodes, secret) {
 			return resolve();
 		} catch (err) {
 			console.error(err);
-			return reject(
-				"Não foi possível ativar sua verificação de duas etapas. Tente novamente."
-			);
+			return reject(textPack.users.tfa.couldntEnable);
 		}
 	});
 	return promise;
@@ -138,15 +136,11 @@ router.get("/", authorize({ level: 0 }), (req, res) => {
 			return await updateTfa(req.user.id, all[3], all[4])
 				.then(() => {
 					return res.json(
-						response(
-							false,
-							"Verificação de dois fatores ativada.",
-							{
-								recoverCodes: all[0],
-								qrcode: all[2],
-								tfaCode: all[1],
-							}
-						)
+						response(false, textPack.users.tfa.enabled, {
+							recoverCodes: all[0],
+							qrcode: all[2],
+							tfaCode: all[1],
+						})
 					);
 				})
 				.catch((err) => {

@@ -72,7 +72,7 @@ var rateLimiter = function rateLimiter(req, res, next) {
       var headers = getHeaders(limiter, "minimized");
       res.set(headers);
       return res.status(429).json((0, _response["default"])(true, _textPack["default"].rateLimiter.responseError, {
-        limit: "".concat(points - 45, " requests em ").concat(Math.floor(duration / 60), " minutos.")
+        limit: "".concat(minimizedPoints, " requests em ").concat(Math.floor(duration / 60), " minutos.")
       }));
     });
   } else {

@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
-import xssFilters from 'xss-filters';
-import firebase from '../../assets/firebase';
-import response from '../../assets/response';
-import retryHandler from '../../assets/retryHandler';
-import textPack from '../../assets/textPack.json';
-import Performance from '../../assets/tests/performance';
+import xssFilters from "xss-filters";
+import firebase from "../../assets/firebase";
+import response from "../../assets/response";
+import retryHandler from "../../assets/retryHandler";
+import textPack from "../../assets/textPack.json";
+import Performance from "../../assets/tests/performance";
 
 const bucket = firebase.storage().bucket();
 

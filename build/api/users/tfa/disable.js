@@ -47,7 +47,7 @@ function verifyTfaState(uid) {
                 break;
               }
 
-              return _context.abrupt("return", reject("Sua verificação de dois fatores não está ativa."));
+              return _context.abrupt("return", reject(_textPack["default"].users.tfa.notEnabled));
 
             case 6:
               return _context.abrupt("return", resolve(user));
@@ -168,7 +168,7 @@ router.get("/", (0, _authorize["default"])({
       return all;
     }
 
-    throw new Error("500:Seus dados n\xE3o foram encontrados.");
+    throw new Error("500:".concat(_textPack["default"].users.tfa.dataNotFound));
   }).then(function (all) {
     // Comparar o recover code passado com os coletados do banco de dados.
     var canReturn = all[1].some(function (code) {
@@ -183,7 +183,7 @@ router.get("/", (0, _authorize["default"])({
       return all;
     }
 
-    throw new Error("400:C\xF3digo de recupera\xE7\xE3o invalido.");
+    throw new Error("400:".concat(_textPack["default"].users.tfa.invalidRecoverCode));
   }).then( /*#__PURE__*/function () {
     var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(all) {
       return regeneratorRuntime.wrap(function _callee4$(_context4) {
@@ -192,7 +192,7 @@ router.get("/", (0, _authorize["default"])({
             case 0:
               _context4.next = 2;
               return deleteTfaData(req.user.id, all[0].state).then(function () {
-                return res.json((0, _response["default"])(false, "2FA desativado com sucesso."));
+                return res.json((0, _response["default"])(false, _textPack["default"].users.tfa.disabled));
               })["catch"](function (err) {
                 throw new Error("500:".concat(err));
               });

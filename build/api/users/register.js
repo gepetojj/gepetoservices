@@ -69,27 +69,32 @@ function _verifyUsernameAndEmail() {
                       case 6:
                         emailVerification = _context8.sent;
 
-                        if (usernameVerification.length === 0 && emailVerification.length === 0) {
-                          resolve();
-                        } else {
-                          reject(_textPack["default"].users.register.userOrEmailAlreadyRegistered);
+                        if (!(usernameVerification.length === 0 && emailVerification.length === 0)) {
+                          _context8.next = 11;
+                          break;
                         }
 
-                        _context8.next = 14;
+                        return _context8.abrupt("return", resolve());
+
+                      case 11:
+                        return _context8.abrupt("return", reject(_textPack["default"].users.register.userOrEmailAlreadyRegistered));
+
+                      case 12:
+                        _context8.next = 18;
                         break;
 
-                      case 10:
-                        _context8.prev = 10;
+                      case 14:
+                        _context8.prev = 14;
                         _context8.t0 = _context8["catch"](0);
                         console.error(_context8.t0);
-                        reject(_context8.t0);
+                        return _context8.abrupt("return", reject(_context8.t0));
 
-                      case 14:
+                      case 18:
                       case "end":
                         return _context8.stop();
                     }
                   }
-                }, _callee8, null, [[0, 10]]);
+                }, _callee8, null, [[0, 14]]);
               }));
 
               return function (_x11, _x12) {
@@ -151,15 +156,13 @@ function _deleteUser() {
                         });
 
                       case 3:
-                        resolve();
-                        _context10.next = 10;
-                        break;
+                        return _context10.abrupt("return", resolve());
 
                       case 6:
                         _context10.prev = 6;
                         _context10.t0 = _context10["catch"](0);
                         console.error(_context10.t0);
-                        reject(_context10.t0);
+                        return _context10.abrupt("return", reject(_context10.t0));
 
                       case 10:
                       case "end":

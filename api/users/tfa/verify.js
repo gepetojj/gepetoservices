@@ -1,5 +1,5 @@
 require("dotenv").config();
-import e, { Router } from "express";
+import { Router } from "express";
 const router = Router();
 import { verifyToken } from "node-2fa";
 
@@ -14,9 +14,7 @@ function verifyTfaState(uid) {
 		try {
 			const user = await User.findOne({ _id: uid });
 			if (!user.state.tfaActivated) {
-				return reject(
-					"Sua verificação de dois fatores não está ativa."
-				);
+				return reject(textPack.users.tfa.notEnabled);
 			}
 			return resolve(user.tfa.secret);
 		} catch (err) {
@@ -58,9 +56,11 @@ router.get("/", authorize({ level: 0 }), (req, res) => {
 		.then((all) => {
 			const verified = verifyToken(all[1], code);
 			if (verified && verified.delta === 0) {
-				return res.json(response(false, "Verificado com sucesso."));
+				return res.json(response(false, textPack.users.tfa.verified));
 			}
-			return res.status(401).json(response(true, "Código inválido."));
+			return res
+				.status(401)
+				.json(response(true, textPack.users.tfa.notVerified));
 		})
 		.catch((err) => {
 			console.log(err);
