@@ -5,6 +5,7 @@ import response from "../../assets/response";
 import status from "../../assets/status";
 import textPack from "../../assets/textPack.json";
 import Performance from "../../assets/tests/performance";
+import logger from "../../assets/logger";
 
 router.get("/", async (req, res) => {
 	const performanceLog = new Performance(req.baseUrl);
@@ -95,7 +96,7 @@ router.get("/", async (req, res) => {
 			})
 		);
 	} catch (err) {
-		console.error(err);
+		logger.error(err.message);
 		return res
 			.status(500)
 			.json(response(true, textPack.standards.responseError));

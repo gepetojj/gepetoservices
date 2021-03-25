@@ -1,5 +1,7 @@
-import validatorLib from 'validator';
-import textPack from './textPack.json';
+import validatorLib from "validator";
+
+import Performance from "./tests/performance";
+import textPack from "./textPack.json";
 
 /**
  * Valida e sanitiza dados.
@@ -10,6 +12,7 @@ import textPack from './textPack.json';
 function validator(data) {
 	let response = [];
 
+	const performanceLog = new Performance("validação");
 	data.forEach((doc) => {
 		switch (doc.type) {
 			case "username":
@@ -59,6 +62,7 @@ function validator(data) {
 				break;
 		}
 	});
+	performanceLog.finish();
 
 	return response;
 }

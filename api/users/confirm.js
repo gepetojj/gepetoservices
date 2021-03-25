@@ -2,11 +2,13 @@ require("dotenv").config();
 import { Router } from "express";
 const router = Router();
 import xssFilters from "xss-filters";
+
 import response from "../../assets/response";
 import textPack from "../../assets/textPack.json";
 import User from "../../assets/models/User";
 import Token from "../../assets/token";
 import Performance from "../../assets/tests/performance";
+import logger from "../../assets/logger";
 
 function getCurrentUserState(id) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -18,7 +20,7 @@ function getCurrentUserState(id) {
 				return reject("Usuário inexistente.");
 			}
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(err.message);
 		}
 	});
@@ -31,7 +33,7 @@ function changeUserState(id, newState) {
 			await User.updateOne({ _id: id }, { state: newState });
 			return resolve();
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(err.message);
 		}
 	});
@@ -44,7 +46,7 @@ function changeUserData(id, newData) {
 			await User.updateOne({ _id: id }, newData);
 			return resolve();
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(err.message);
 		}
 	});

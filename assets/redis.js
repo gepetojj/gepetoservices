@@ -1,5 +1,7 @@
 require("dotenv").config();
-import { createClient } from 'redis';
+import { createClient } from "redis";
+
+import logger from "./logger";
 
 const redisServer = process.env.REDIS_SERVER;
 
@@ -9,12 +11,11 @@ const redisClient = createClient({
 });
 
 redisClient.on("connect", () => {
-	console.log("Conectado ao redis.");
+	logger.info("Conectado ao redis.");
 });
 
 redisClient.on("error", (err) => {
-	console.error("Conexão interrompida com o redis.");
-	throw new Error(err);
+	throw logger.fatal(err.message);
 });
 
 export default redisClient;

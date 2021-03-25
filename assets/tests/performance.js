@@ -1,4 +1,7 @@
-import moment from 'moment-timezone';
+import moment from "moment-timezone";
+
+import logger from "../logger";
+
 moment().locale("pt-br");
 moment().tz("America/Maceio");
 
@@ -17,6 +20,7 @@ class Performance {
 			start: moment().valueOf(),
 			end: null,
 		});
+		return;
 	}
 
 	watchpointEnd(name) {
@@ -26,24 +30,28 @@ class Performance {
 			start: this.watchpoints[index].start,
 			end: moment().valueOf(),
 		};
+		return;
 	}
 
 	finish() {
 		this.watchpoints.forEach((watchpoint) => {
-			console.log(
-				`A execução do processo '${watchpoint.name}' gastou ${moment(
-					watchpoint.end - watchpoint.start
-				).format("x [ms.]")}`
+			const performance = moment(
+				watchpoint.end - watchpoint.start
+			).format("x [ms.]");
+			logger.info(
+				`A execução do processo '${watchpoint.name}' gastou ${performance}`
 			);
 		});
+
 		this.end = moment().valueOf();
 		this.executionTime = this.end - this.start;
-		console.log(
-			`O endpoint '${this.endpoint}' respondeu em ${moment(
-				this.end - this.start
-			).format("x [ms.]")}`
+		const finalPerformance = moment(this.end - this.start).format(
+			"x [ms.]"
 		);
-		return console.log("---");
+		logger.info(
+			`O endpoint '${this.endpoint}' respondeu em ${finalPerformance}`
+		);
+		return;
 	}
 }
 

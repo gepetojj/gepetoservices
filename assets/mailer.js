@@ -1,6 +1,9 @@
 require("dotenv").config();
-import { createTransport } from 'nodemailer';
-import ejs from 'ejs';
+import { createTransport } from "nodemailer";
+import ejs from "ejs";
+
+import logger from "./logger";
+import Performance from "./tests/performance";
 
 /**
  * Envia um email.
@@ -13,6 +16,7 @@ import ejs from 'ejs';
  */
 function mailer({ template, templateParams, target, subject }) {
 	const promise = new Promise(async (resolve, reject) => {
+		const performanceLog = new Performance("emails");
 		try {
 			const transporter = createTransport({
 				host: "smtp.gmail.com",
@@ -31,8 +35,9 @@ function mailer({ template, templateParams, target, subject }) {
 				templateParams,
 				(err, html) => {
 					if (err) {
-						console.error(err);
-						reject(err);
+						performanceLog.finish();
+						logger.error(err.message);
+						return reject(err);
 					}
 
 					renderedHtml = html;
@@ -46,13 +51,16 @@ function mailer({ template, templateParams, target, subject }) {
 				html: renderedHtml,
 			});
 			if (err) {
-				console.error(err);
-				reject(err);
+				performanceLog.finish();
+				logger.error(err.message);
+				return reject(err);
 			}
-			resolve();
+			performanceLog.finish();
+			return resolve();
 		} catch (err) {
-			console.error(err);
-			reject(err);
+			performanceLog.finish();
+			logger.error(err.message);
+			return reject(err);
 		}
 	});
 	return promise;

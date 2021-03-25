@@ -1,4 +1,6 @@
-import { randomBytes, createCipheriv, createDecipheriv } from 'crypto';
+import { randomBytes, createCipheriv, createDecipheriv } from "crypto";
+
+import logger from "./logger";
 
 function Crypto(algorithm = "aes-256-ctr") {
 	/**
@@ -21,7 +23,7 @@ function Crypto(algorithm = "aes-256-ctr") {
 
 			return { error: false, hash: encrypted.toString("hex"), key, iv };
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return { error: true };
 		}
 	}
@@ -50,7 +52,7 @@ function Crypto(algorithm = "aes-256-ctr") {
 
 			return { error: false, result: decrypted.toString() };
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return { error: true };
 		}
 	}

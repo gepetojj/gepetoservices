@@ -24,8 +24,10 @@
 		"invalidToken": "Seu token de autorização não é válido.",
 		"nullApp": "Informe qual app está fazendo o request.",
 		"invalidApp": "Você não está permitido para acessar este app.",
+		"expiredToken": "Seu token expirou e não é mais válido. Faça login.",
 		"couldntValidateToken": "Não foi possível validar seu token.",
-		"apps": ["noapp", "lastpwd", "ppt"]
+		"apps": ["noapp", "lastpwd", "ppt"],
+		"noPermission": "Você não tem permissões necessárias para isso."
 	},
 	"validator": {
 		"username": {
@@ -44,6 +46,12 @@
 		},
 		"equals": {
 			"equal": "As senhas devem ser iguais."
+		},
+		"session": {
+			"agent": "O agente não pode ser nulo.",
+			"ip": "IP inválido.",
+			"app": "App inválido.",
+			"jwt": "refreshToken inválido."
 		}
 	},
 	"standards": {

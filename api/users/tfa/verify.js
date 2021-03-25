@@ -8,6 +8,7 @@ import textPack from "../../../assets/textPack.json";
 import authorize from "../../../assets/middlewares/authorize";
 import User from "../../../assets/models/User";
 import encryption from "../../../assets/crypto";
+import logger from "../../../assets/logger";
 
 function verifyTfaState(uid) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -18,7 +19,7 @@ function verifyTfaState(uid) {
 			}
 			return resolve(user.tfa.secret);
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(textPack.standards.responseError);
 		}
 	});
@@ -63,7 +64,7 @@ router.get("/", authorize({ level: 0 }), (req, res) => {
 				.json(response(true, textPack.users.tfa.notVerified));
 		})
 		.catch((err) => {
-			console.log(err);
+			logger.error(err.message);
 			const error = err.message.split(":");
 			return res.status(error[0]).json(response(true, error[1]));
 		});

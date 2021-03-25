@@ -4,16 +4,16 @@ const router = Router();
 import moment from "moment-timezone";
 import bcrypt from "bcrypt";
 import xssFilters from "xss-filters";
+
 import response from "../../assets/response";
 import textPack from "../../assets/textPack.json";
 import User from "../../assets/models/User";
 import Token from "../../assets/token";
-import firebase from "../../assets/firebase";
+import Session from "../../assets/models/Session";
 import Performance from "../../assets/tests/performance";
 
 moment().locale("pt-br");
 moment().tz("America/Maceio");
-const userSessions = firebase.firestore().collection("sessions");
 
 function findUser(username) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -35,7 +35,7 @@ function verifyTfaState(uid) {
 			if (userData.state.tfaActivated) {
 				return resolve(true);
 			} else {
-				return resolve(false)
+				return resolve(false);
 			}
 		} catch (err) {
 			return reject(err);
@@ -49,40 +49,6 @@ function comparePasswords(text, hash) {
 		try {
 			const same = await bcrypt.compare(text, hash);
 			return resolve(same);
-		} catch (err) {
-			console.error(err);
-			return reject(err);
-		}
-	});
-	return promise;
-}
-
-function revokeLastLoginToken(id) {
-	const promise = new Promise(async (resolve, reject) => {
-		try {
-			const data = await User.findOne({ _id: id });
-			if (data.lastLogin.token) {
-				await Token()
-					.verify(data.lastLogin.token)
-					.then(async (decoded) => {
-						await Token()
-							.revoke(decoded.tokenId)
-							.then(() => {
-								return resolve();
-							})
-							.catch((err) => {
-								return reject(err);
-							});
-					})
-					.catch((err) => {
-						if (err.message === textPack.authorize.invalidToken) {
-							return resolve();
-						}
-						return reject(err);
-					});
-			} else {
-				return resolve();
-			}
 		} catch (err) {
 			console.error(err);
 			return reject(err);
@@ -134,19 +100,6 @@ function verifyAndUpdateUserApps(user, app) {
 	});
 	return promise;
 }
-
-/* function updateSessions(username) {
-	const promise = new Promise(async (resolve, reject) => {
-		await userSessions
-			.doc(username)
-			.get()
-			.then((doc) => {
-				if (doc.exists) {
-				}
-			});
-	});
-	return promise;
-} */
 
 router.post("/", async (req, res) => {
 	const performanceLog = new Performance(req.baseUrl);
@@ -211,32 +164,47 @@ router.post("/", async (req, res) => {
 				});
 		})
 		.then(async (all) => {
-			return await revokeLastLoginToken(all[0]._id)
+			const accessToken = Token().create(
+				{
+					id: all[0]._id,
+					app,
+				},
+				"access"
+			);
+			const refreshToken = Token().create(
+				{
+					id: all[0]._id,
+					app,
+				},
+				"refresh"
+			);
+			if (accessToken.error || refreshToken.error) {
+				throw new Error(`500:${textPack.standards.responseError}`);
+			}
+			all.push(accessToken.token);
+			all.push(refreshToken.token);
+			return all;
+		})
+		.then(async (all) => {
+			const refreshToken = Session().model({
+				uid: all[0]._id,
+				username: all[0].username,
+				agent,
+				ip,
+				tfaValidated: false,
+				app,
+				refreshToken: all[2],
+			});
+			if (refreshToken.error) {
+				throw new Error(`400:${refreshToken.message}`);
+			}
+			return await Session()
+				.create(refreshToken.session)
 				.then(() => {
-					const accessToken = Token().create(
-						{
-							id: all[0]._id,
-							app,
-						},
-						"access"
-					);
-					const refreshToken = Token().create(
-						{
-							id: all[0]._id,
-							app,
-						},
-						"refresh"
-					);
-					if (accessToken.error || refreshToken.error) {
-						throw new Error(
-							`500:${textPack.standards.responseError}`
-						);
-					}
-					all.push(accessToken.token);
-					all.push(refreshToken.token);
 					return all;
 				})
-				.catch(() => {
+				.catch((err) => {
+					console.error(err);
 					throw new Error(`500:${textPack.standards.responseError}`);
 				});
 		})
@@ -260,12 +228,7 @@ router.post("/", async (req, res) => {
 		.then(async (all) => {
 			return await verifyAndUpdateUserApps(all[0], app)
 				.then(() => {
-					res.cookie("refreshToken", all[2], {
-						expires: moment().add(1, "day").toDate(),
-						secure: process.env.NODE_ENV === "production",
-						httpOnly: true,
-						sameSite: "lax",
-					});
+					req.session.refreshToken = all[2];
 					performanceLog.finish();
 					return res.json(
 						response(false, textPack.users.login.logged, {

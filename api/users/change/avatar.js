@@ -1,16 +1,18 @@
 require("dotenv").config();
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
-import fs from 'fs';
-import Jimp from 'jimp';
-import shortid from 'shortid';
-import crypto from 'crypto';
-import authorize from '../../../assets/middlewares/authorize';
-import response from '../../../assets/response';
-import textPack from '../../../assets/textPack.json';
-import User from '../../../assets/models/User';
-import firebase from '../../../assets/firebase';
-import Performance from '../../../assets/tests/performance';
+import fs from "fs";
+import Jimp from "jimp";
+import shortid from "shortid";
+import crypto from "crypto";
+
+import authorize from "../../../assets/middlewares/authorize";
+import response from "../../../assets/response";
+import textPack from "../../../assets/textPack.json";
+import User from "../../../assets/models/User";
+import firebase from "../../../assets/firebase";
+import Performance from "../../../assets/tests/performance";
+import logger from "../../../assets/logger";
 
 const bucket = firebase.storage().bucket();
 
@@ -21,7 +23,7 @@ async function checkUserAvatar(uid) {
 			const avatarExists = await avatar.exists();
 			resolve(avatarExists[0]);
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			reject(err);
 		}
 	});
@@ -35,7 +37,7 @@ async function deleteOldAvatar(uid) {
 			await avatar.delete();
 			resolve();
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			reject(err);
 		}
 	});
@@ -49,7 +51,7 @@ async function moveFile(file) {
 		}`;
 		file.mv(path, (err) => {
 			if (err) {
-				console.error(err);
+				logger.error(err.message);
 				reject(err);
 			}
 			resolve(path);
@@ -69,13 +71,13 @@ async function resizeImage(uid, path) {
 					.quality(95)
 					.write(newPath, (err) => {
 						if (err) {
-							console.error(err);
+							logger.error(err.message);
 							reject(err);
 						}
 
 						fs.readFile(newPath, (err, data) => {
 							if (err) {
-								console.error(err);
+								logger.error(err.message);
 								reject(err);
 							}
 							const checksum = crypto
@@ -88,7 +90,7 @@ async function resizeImage(uid, path) {
 					});
 			})
 			.catch((err) => {
-				console.error(err);
+				logger.error(err.message);
 				reject(err);
 			});
 	});
@@ -100,7 +102,7 @@ function deleteImage(path) {
 		fs.unlinkSync(path);
 		return { error: false };
 	} catch (err) {
-		console.error(err);
+		logger.error(err.message);
 		return { error: true, message: textPack.standards.responseError };
 	}
 }
@@ -114,7 +116,7 @@ async function uploadAvatar(path, checksum) {
 			})
 			.then(resolve())
 			.catch((err) => {
-				console.error(err.message);
+				logger.error(err.message);
 				reject(err);
 			});
 	});
@@ -133,7 +135,7 @@ async function updateUserAvatar(uid) {
 					resolve(publicUrl);
 				})
 				.catch((err) => {
-					console.error(err.message);
+					logger.error(err.message);
 					reject(err);
 				});
 		}, 300);

@@ -4,11 +4,13 @@ const router = Router();
 import { generateSecret } from "node-2fa";
 import { generate } from "shortid";
 import bcrypt from "bcrypt";
+
 import response from "../../../assets/response";
 import textPack from "../../../assets/textPack.json";
 import authorize from "../../../assets/middlewares/authorize";
 import User from "../../../assets/models/User";
 import encryption from "../../../assets/crypto";
+import logger from "../../../assets/logger";
 
 function verifyTfaState(uid) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -31,7 +33,7 @@ function verifyTfaState(uid) {
 			);
 			return resolve();
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(textPack.standards.responseError);
 		}
 	});
@@ -78,7 +80,7 @@ function updateTfa(uid, recoverCodes, secret) {
 			);
 			return resolve();
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(textPack.users.tfa.couldntEnable);
 		}
 	});

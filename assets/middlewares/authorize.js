@@ -6,11 +6,12 @@ import textPack from "../textPack.json";
 import Token from "../token";
 import User from "../models/User";
 import cacheController from "../cacheController";
+import logger from "../logger";
 
 function authorize({ level }) {
 	return async (req, res, next) => {
 		const authorization = req.headers["authorization"];
-		const refreshToken = req.cookies["refreshToken"];
+		const refreshToken = req.session.refreshToken;
 		const app = req.headers["x-from-app"] || "noapp";
 		const agent = req.headers["user-agent"];
 
@@ -57,7 +58,7 @@ function authorize({ level }) {
 								.json(
 									response(
 										true,
-										"Você não tem permissões necessárias para isso."
+										textPack.authorize.noPermission
 									)
 								);
 						}
@@ -99,7 +100,7 @@ function authorize({ level }) {
 										.json(
 											response(
 												true,
-												"Você não tem permissões necessárias para isso."
+												textPack.authorize.noPermission
 											)
 										);
 								}
@@ -130,6 +131,7 @@ function authorize({ level }) {
 						}
 					})
 					.catch((err) => {
+						logger.error(err.message);
 						return res
 							.status(err.code)
 							.json(response(true, err.message));
@@ -142,6 +144,7 @@ function authorize({ level }) {
 						.status(err.code)
 						.json(response(true, err.message));
 				}
+				logger.error(err.message);
 				return res.status(err.code).json(response(true, err.message));
 			});
 	};

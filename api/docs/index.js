@@ -3,9 +3,8 @@ const router = Router();
 import swaggerUI from "swagger-ui-express";
 import swagger from "./swagger.json";
 
-const specs = swagger;
-swagger.info.version = "2.2.6";
+swagger.info.version = "2.3.1";
 
-router.use("/", swaggerUI.serve, swaggerUI.setup(specs));
+router.use("/", swaggerUI.serve, swaggerUI.setup(swagger));
 
 export default router;

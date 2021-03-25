@@ -6,6 +6,7 @@ import response from "../../../assets/response";
 import textPack from "../../../assets/textPack.json";
 import authorize from "../../../assets/middlewares/authorize";
 import User from "../../../assets/models/User";
+import logger from "../../../assets/logger";
 
 function verifyTfaState(uid) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -16,7 +17,7 @@ function verifyTfaState(uid) {
 			}
 			return resolve(user);
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(textPack.standards.responseError);
 		}
 	});
@@ -44,7 +45,7 @@ function deleteTfaData(uid, state) {
 			);
 			return resolve();
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(textPack.standards.responseError);
 		}
 	});

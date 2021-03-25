@@ -1,16 +1,18 @@
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
-import xssFilters from 'xss-filters';
-import bcrypt from 'bcrypt';
-import authorize from '../../../assets/middlewares/authorize';
-import response from '../../../assets/response';
-import validator from '../../../assets/validator';
-import textPack from '../../../assets/textPack.json';
-import User from '../../../assets/models/User';
-import API from '../../../assets/api';
-import Token from '../../../assets/token';
-import mailer from '../../../assets/mailer';
-import Performance from '../../../assets/tests/performance';
+import xssFilters from "xss-filters";
+import bcrypt from "bcrypt";
+
+import authorize from "../../../assets/middlewares/authorize";
+import response from "../../../assets/response";
+import validator from "../../../assets/validator";
+import textPack from "../../../assets/textPack.json";
+import User from "../../../assets/models/User";
+import API from "../../../assets/api";
+import Token from "../../../assets/token";
+import mailer from "../../../assets/mailer";
+import Performance from "../../../assets/tests/performance";
+import logger from "../../../assets/logger";
 
 function verifyPassword(uid, password) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -22,11 +24,11 @@ function verifyPassword(uid, password) {
 					resolve(same);
 				})
 				.catch((err) => {
-					console.error(err);
+					logger.error(err.message);
 					reject(err);
 				});
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			reject(err);
 		}
 	});
@@ -39,7 +41,7 @@ function encryptPassword(password) {
 			const hash = await bcrypt.hash(password, 12);
 			resolve(hash);
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			reject(err);
 		}
 	});

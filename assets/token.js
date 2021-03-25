@@ -1,9 +1,11 @@
 require("dotenv").config();
-import jwt from 'jsonwebtoken';
-import moment from 'moment-timezone';
-import { generate } from 'shortid';
-import redis from './redis';
-import textPack from './textPack.json';
+import jwt from "jsonwebtoken";
+import moment from "moment-timezone";
+import { generate } from "shortid";
+
+import redis from "./redis";
+import textPack from "./textPack.json";
+import logger from "./logger";
 
 moment().locale("pt-br");
 moment().tz("America/Maceio");
@@ -32,7 +34,7 @@ function Token() {
 				);
 				return { error: false, token };
 			} catch (err) {
-				console.error(err);
+				logger.error(err.message);
 				return { error: true, message: err };
 			}
 		} else {
@@ -48,11 +50,12 @@ function Token() {
 				);
 				const redisOperation = redis.set(tokenId, "true");
 				if (redisOperation.error) {
+					logger.error(redisOperation.error);
 					return { error: true, message: redisOperation.error };
 				}
 				return { error: false, token };
 			} catch (err) {
-				console.error(err);
+				logger.error(err.message);
 				return { error: true, message: err };
 			}
 		}
@@ -76,17 +79,16 @@ function Token() {
 						if (err) {
 							if (err.name === "TokenExpiredError") {
 								return reject({
-									message:
-										"Seu token de acesso está expirado, use o seu token de atualização para obter outro.",
+									message: textPack.authorize.expiredToken,
 									code: 401,
 									errCode: "ACCESS_TOKEN_EXPIRED",
 								});
-							} else {
-								return reject({
-									message: textPack.authorize.invalidToken,
-									code: 401,
-								});
 							}
+							logger.error(err.message);
+							return reject({
+								message: textPack.authorize.invalidToken,
+								code: 401,
+							});
 						}
 
 						return resolve(decoded);
@@ -98,6 +100,14 @@ function Token() {
 					process.env.REFRESH_TOKEN_SECRET,
 					(err, decoded) => {
 						if (err) {
+							if (err.name === "TokenExpiredError") {
+								return reject({
+									message: textPack.authorize.expiredToken,
+									code: 401,
+									errCode: "ACCESS_TOKEN_EXPIRED",
+								});
+							}
+							logger.error(err.message);
 							return reject({
 								message: textPack.authorize.invalidToken,
 								code: 401,
@@ -106,6 +116,7 @@ function Token() {
 
 						redis.get(decoded.tokenId, (err, data) => {
 							if (err) {
+								logger.error(err.message);
 								return reject({
 									message:
 										textPack.authorize.couldntValidateToken,
@@ -139,6 +150,7 @@ function Token() {
 		const promise = new Promise((resolve, reject) => {
 			redis.set(tokenId, "false", (err) => {
 				if (err) {
+					logger.error(err.message);
 					return reject(err);
 				}
 				return resolve();

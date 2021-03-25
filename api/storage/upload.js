@@ -3,10 +3,12 @@ const router = Router();
 import moment from "moment-timezone";
 import shortid from "shortid";
 import fs from "fs";
+
 import firebase from "../../assets/firebase";
 import response from "../../assets/response";
 import textPack from "../../assets/textPack.json";
 import Performance from "../../assets/tests/performance";
+import logger from "../../assets/logger";
 
 const bucket = firebase.storage().bucket();
 const database = firebase.firestore().collection("storageLog");
@@ -31,7 +33,7 @@ function verifyUserLimits(ip) {
 				}
 			})
 			.catch((err) => {
-				console.error(err);
+				logger.error(err.message);
 				return reject(textPack.storage.upload.limitError);
 			});
 	});
@@ -58,7 +60,7 @@ function logUserAction(ip, filename) {
 							return resolve();
 						})
 						.catch((err) => {
-							console.error(err);
+							logger.error(err.message);
 							return reject(textPack.standards.responseError);
 						});
 				} else {
@@ -75,7 +77,7 @@ function logUserAction(ip, filename) {
 							return resolve();
 						})
 						.catch((err) => {
-							console.error(err);
+							logger.error(err.message);
 							return reject(textPack.standards.responseError);
 						});
 				}
@@ -93,7 +95,7 @@ function deleteCloudFile(filename) {
 				return resolve(textPack.storage.upload.uploadCanceled);
 			})
 			.catch((err) => {
-				console.error(err);
+				logger.error(err.message);
 				return reject(textPack.storage.upload.uploadCanceledError);
 			});
 	});
@@ -105,7 +107,7 @@ function deleteLocalFile(path) {
 		fs.unlinkSync(path);
 		return { error: false };
 	} catch (err) {
-		console.error(err);
+		logger.error(err.message);
 		return { error: true, message: textPack.standards.responseError };
 	}
 }
@@ -115,7 +117,7 @@ function moveFile(file, filename) {
 		const path = `${process.cwd()}/temp/${filename}`;
 		file.mv(path, (err) => {
 			if (err) {
-				console.error(err);
+				logger.error(err.message);
 				return reject(textPack.standards.responseError);
 			}
 			return resolve(path);
@@ -132,7 +134,7 @@ function uploadFile(path, checksum) {
 				return resolve();
 			})
 			.catch((err) => {
-				console.error(err);
+				logger.error(err.message);
 				return reject(textPack.standards.responseError);
 			});
 	});
@@ -226,7 +228,7 @@ router.post("/", async (req, res) => {
 				});
 		})
 		.catch(async (err) => {
-			console.error(err);
+			logger.error(err.message);
 			if (promisesResults[2] === "uploaded") {
 				await deleteCloudFile(promisesResults[0])
 					.then((msg) => {

@@ -2,6 +2,7 @@ import { Router } from "express";
 const router = Router();
 import bcrypt from "bcrypt";
 import xssFilters from "xss-filters";
+
 import response from "../../assets/response";
 import API from "../../assets/api";
 import validator from "../../assets/validator";
@@ -10,6 +11,7 @@ import User from "../../assets/models/User";
 import Token from "../../assets/token";
 import mailer from "../../assets/mailer";
 import Performance from "../../assets/tests/performance";
+import logger from "../../assets/logger";
 
 async function verifyUsernameAndEmail(username, email) {
 	const promise = new Promise(async (resolve, reject) => {
@@ -23,10 +25,12 @@ async function verifyUsernameAndEmail(username, email) {
 			) {
 				return resolve();
 			} else {
-				return reject(textPack.users.register.userOrEmailAlreadyRegistered);
+				return reject(
+					textPack.users.register.userOrEmailAlreadyRegistered
+				);
 			}
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(err);
 		}
 	});
@@ -54,7 +58,7 @@ async function deleteUser(id) {
 			await User.deleteOne({ _id: id });
 			return resolve();
 		} catch (err) {
-			console.error(err);
+			logger.error(err.message);
 			return reject(err);
 		}
 	});
@@ -156,7 +160,7 @@ router.post("/", async (req, res) => {
 					return all;
 				})
 				.catch((err) => {
-					console.error(err);
+					logger.error(err.message);
 					throw new Error(
 						`500:${textPack.users.register.userNotCreated}`
 					);
@@ -213,7 +217,7 @@ router.post("/", async (req, res) => {
 		.catch((err) => {
 			performanceLog.finish();
 			const error = err.message.split(":");
-			console.log(error);
+			logger.error(err.message);
 			return res.status(error[0]).json(response(true, error[1]));
 		});
 });

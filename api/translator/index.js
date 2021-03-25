@@ -1,9 +1,11 @@
-import { Router } from 'express';
+import { Router } from "express";
 const router = Router();
-import translate from '@k3rn31p4nic/google-translate-api';
-import xssFilters from 'xss-filters';
-import response from '../../assets/response';
-import textPack from '../../assets/textPack.json';
+import translate from "@k3rn31p4nic/google-translate-api";
+import xssFilters from "xss-filters";
+
+import response from "../../assets/response";
+import textPack from "../../assets/textPack.json";
+import logger from "../../assets/logger";
 
 router.get("/", (req, res) => {
 	let { text, from, to } = req.query;
@@ -22,7 +24,7 @@ router.get("/", (req, res) => {
 			return res.json(response(false, translatedText));
 		})
 		.catch((err) => {
-			console.error(err);
+			logger.error(err.message);
 			translate(err.message, { from: "en", to: "pt" })
 				.then((translatedError) => {
 					return res
@@ -30,7 +32,7 @@ router.get("/", (req, res) => {
 						.json(response(true, translatedError.text));
 				})
 				.catch((err) => {
-					console.error(err);
+					logger.error(err.message);
 					return res
 						.status(500)
 						.json(response(true, textPack.standards.responseError));
